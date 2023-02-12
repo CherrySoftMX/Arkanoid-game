@@ -291,7 +291,11 @@ export class GameScreen {
     });
 
     blocks.forEach(block => block.addObserver(this.scoreManager));
-    blocks.forEach(block => block.addObserver(this));
+    blocks.forEach(block => {
+      if (block.getBlockType() === CONSTANTS.POWER_UP_BLOCK) {
+        block.addObserver(this);
+      }
+    });
 
     return {
       blocks,
@@ -358,30 +362,28 @@ export class GameScreen {
   }
 
   // Observer
-  update({ x, y, width, height, type = 'Unknown' }) {
-    // Temporal solution to test power ups
-    const num = getRandomNum(1, 4);
-    if (num === 2 && type === 'Block') {
-      console.log('Se genero un power up!');
-
-      const p5 = this.p5;
-      const canvasHeight = this.canvasHeight;
-
-      const powerUp = new PowerUp({
-        x,
-        y,
-        p5,
-        canvasHeight,
-        type: 'PowerUp - Multiple',
-        callBack: this.powerUpMultipleBalls.bind(this, 2),
-      });
-
-      powerUp.addCollisionObject(this.player);
-      powerUp.addObserver(this);
-
-      this.powerUps.push(powerUp);
-    } else if (type.includes('PowerUp')) {
-      this.powerUps = this.powerUps.filter(p => p.isActive());
+  update({ x, y, type = 'Unknown' }) {
+    switch (type) {
+      case 'Block':
+        const p5 = this.p5;
+        const canvasHeight = this.canvasHeight;
+  
+        const powerUp = new PowerUp({
+          x,
+          y,
+          p5,
+          canvasHeight,
+          callback: this.powerUpMultipleBalls.bind(this, 2),
+        });
+  
+        powerUp.addCollisionObject(this.player);
+        powerUp.addObserver(this);
+  
+        this.powerUps.push(powerUp);
+        break;
+      case 'PowerUp':
+        this.powerUps = this.powerUps.filter(p => p.isActive());
+        break;
     }
   }
 

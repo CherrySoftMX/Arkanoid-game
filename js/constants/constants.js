@@ -15,6 +15,7 @@ export const CONSTANTS = {
   INITIAL_LEVEL: 0,
   PLAYER_SPEED_INCREASE: 0.25,
   BALL_SPEED_INCREASE: 0.2,
+  POWER_UP_BLOCK: '?',
 };
 
 // Durabilidad negativa significa indestructible
@@ -39,12 +40,17 @@ export const BLOCK_TYPES = {
     color: '#928E9B',
     score: 0,
   },
+  '?': { // Power Up block
+    durability: 1,
+    color: '#FF5531',
+    score: 150,
+  },
 };
 
 export const LEVELS = [
   [
     ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
+    ['_', '_', '?', '_', '_'],
     //['_', '_', '_', '_', '_'],
     //['_', '_', '_', '_', '_'],
     //['_', '_', '_', '_', '_'],
