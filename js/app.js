@@ -78,6 +78,14 @@ function setup() {
 function draw() {
   game.draw();
 };
+
+function keyReleased() {
+  game.handleKeyReleased();
+}
+
+function keyPressed() {
+  game.handleKeyPressed();
+}
 /*
  * P5.js control functions
  ******************/
@@ -178,7 +186,7 @@ class GameScreen {
     this.drawBlocks();
     this.scoreManager.draw();
   
-    this.handleKeyPressed();
+    //this.handleKeyPressed();
     this.handleEndGame();
   }
 
@@ -219,6 +227,10 @@ class GameScreen {
     if (keyIsPressed) {
       this.player.controlInputs(keyCode);
     }
+  }
+
+  handleKeyReleased() {
+    this.player.keyReleased();
   }
 
   displayCenteredText(message = 'Debug message') {
@@ -528,11 +540,15 @@ class Player {
     this.isDestroyed = false;
 
     this.type = 'Player';
+
+    this.pos = createVector(this.x, this.y);
+    this.vel = createVector(0, 0);
   }
 
   draw() {
+    this.pos.add(this.vel);
     fill(255);
-    rect(this.x, this.y, this.width, this.height, this.height * 0.3);
+    rect(this.pos.x, this.pos.y, this.width, this.height, this.height * 0.3);
   }
 
   controlInputs(input) {
@@ -541,23 +557,31 @@ class Player {
     } else if (input === LEFT_ARROW && this.shouldMoveToLeft()) {
       this.moveToLeft();
     }
+    const prevVel = this.vel.copy();
+    this.pos.sub(prevVel);
+  }
+
+  keyReleased() {
+    this.vel.set(0, 0);
   }
 
   moveToRight() {
-    this.x = this.x + this.speed;
+    const prevVel = this.vel.copy();
+    this.vel.set(this.speed, 0);
   }
 
   moveToLeft() {
-    this.x = this.x - this.speed;
+    const prevVel = this.vel.copy();
+    this.vel.set(-this.speed, 0);
   }
 
   shouldMoveToLeft() {
-    const isInsideScreen = (this.x - this.speed) >= 0;
+    const isInsideScreen = (this.pos.x - this.speed) >= 0;
     return isInsideScreen; 
   }
 
   shouldMoveToRight() {
-    const isInsideScreen = this.x + this.speed <= this.container.width - this.width;
+    const isInsideScreen = this.pos.x + this.speed <= this.container.width - this.width;
     return isInsideScreen;
   }
 
@@ -570,17 +594,17 @@ class Player {
   }
 
   getX() {
-    return this.x;
+    return this.pos.x;
   }
 
   getY() {
-    return this.y;
+    return this.pos.y;
   }
 
   getCoords() {
     return {
-      x: this.getX(),
-      y: this.getY(),
+      x: this.pos.x,
+      y: this.pos.y,
     };
   }
 
@@ -622,9 +646,6 @@ class Ball {
       objectWidth: this.width,
       objectHeight: this.height,
     });
-
-    this.x = x;
-    this.y = y;
     
     this.speed = CONSTANTS.BALL_SPEED;
 
@@ -636,13 +657,10 @@ class Ball {
     const randomNum = getRandomNum(0, 4);
     this.angle = possibleAngles[randomNum];
 
-    this.collisionObjects = [];
-
     this.isDestroyed = false;
 
-    /**
-    * REFACTOR CON VECTORES
-    */
+    this.collisionObjects = [];
+
     this.pos = createVector(x, y);
     this.vel = createVector(this.speed, -this.speed);
   }
@@ -650,10 +668,6 @@ class Ball {
   draw() {
     fill(255);
     this.update();
-    //ellipse(this.x, this.y, this.width, this.height);
-    /**
-     * Refactor con vectores
-     */
     ellipse(this.pos.x, this.pos.y, this.width, this.height);
   }
 
@@ -662,39 +676,25 @@ class Ball {
     if (!this.isActive()) return;
     this.pos.add(this.vel);
     this.detectCollisions();
-    return;
-    if (this.angle === 45) {
-      this.x = this.x + this.speed;
-      this.y = this.y + this.speed;
-    } else if (this.angle === 135) {
-      this.x = this.x - this.speed;
-      this.y = this.y + this.speed;
-    } else if (this.angle === 225) {
-      this.x = this.x - this.speed;
-      this.y = this.y - this.speed;
-    } else if (this.angle === 315) {
-      this.x = this.x + this.speed;
-      this.y = this.y - this.speed;
-    }
   }
 
   shouldMoveToLeft() {
-    const isInsideScreen = (this.x - this.speed) >= 0;
+    const isInsideScreen = (this.pos.x - this.speed) >= 0;
     return isInsideScreen; 
   }
 
   shouldMoveToRight() {
-    const isInsideScreen = this.x + this.speed <= this.container.width - (this.width / 2);
+    const isInsideScreen = this.pos.x + this.speed <= this.container.width - (this.width / 2);
     return isInsideScreen;
   }
 
   shouldMoveToTop() {
-    const isInsideScreen = this.y - this.speed >= 0;
+    const isInsideScreen = this.pos.y - this.speed >= 0;
     return isInsideScreen;
   }
 
   shouldMoveToBottom() {
-    const isInsideScreen = this.y + this.speed <= (this.container.height - (this.height / 2));
+    const isInsideScreen = this.pos.y + this.speed <= (this.container.height - (this.height / 2));
     return isInsideScreen;
   }
 
@@ -703,7 +703,7 @@ class Ball {
   }
 
   isBelowScreen() {
-    this.isOutOfField = this.y - this.height >= this.container.height;
+    this.isOutOfField = this.pos.y - this.height >= this.container.height;
     return this.isOutOfField;
   }
 
@@ -722,7 +722,7 @@ class Ball {
         const { width, height } = obj.getData();
         if (this.iAmColliding({ x, y, width, height })) {
           obj.onCollision();
-          this.onCollision(obj);
+          this.onCollision({ ...obj, x, y });
           return;
         }
       }
@@ -774,6 +774,7 @@ class Ball {
         this.vel.x *= -1;
         break;
       case 'Player':
+
         const relativeX = map(this.pos.x, x, x + width, 0, 40);
         let newXDirection = 0;
         if (relativeX < 10) {
@@ -809,11 +810,6 @@ class Ball {
         this.vel.x *= -1;
       }
     }
-
-    console.log('left', isLeftSideHit);
-    console.log('right', isRightSideHit);
-    console.log('top', isTopSideHit);
-    console.log('bottom', isBottomSideHit);
   }
 
   setPlayerReference(player) {
@@ -855,8 +851,6 @@ class Block {
   draw() {
     if (this.isDestroyed) return;
     fill(BLOCK_TYPES[this.blockType].color);
-    //fill(94, 92, 92);
-    //stroke(254, 254, 254);
     strokeWeight(1);
     rect(this.x, this.y, this.width, this.height);
   }
