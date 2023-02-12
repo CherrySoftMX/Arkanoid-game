@@ -154,6 +154,7 @@ class GameScreen {
 
     this.isLoadingNextLevel = false;
     this.isOnMenu = true;
+    this.isGameNotStarted = true;
 
     this.playBtn = null;
     this.generateMenu();
@@ -226,6 +227,7 @@ class GameScreen {
   handleKeyPressed() {
     if (keyIsPressed) {
       this.player.controlInputs(keyCode);
+      this.ball.handleKeyPressed(keyCode);
     }
   }
 
@@ -360,6 +362,7 @@ class GameScreen {
       this.canvasY,
       newPlayer,
     );
+    newBall.followPlayer(newPlayer);
 
     const {
       leftBorder,
@@ -543,12 +546,19 @@ class Player {
 
     this.pos = createVector(this.x, this.y);
     this.vel = createVector(0, 0);
+
+    // -1 -> Izquierda
+    // 0 -> Quieto
+    // 1 -> Derecha
+    this.movementDirection = 0;
   }
 
   draw() {
     this.pos.add(this.vel);
     fill(255);
     rect(this.pos.x, this.pos.y, this.width, this.height, this.height * 0.3);
+
+    text(this.pos.x, 10, 400);
   }
 
   controlInputs(input) {
@@ -563,16 +573,19 @@ class Player {
 
   keyReleased() {
     this.vel.set(0, 0);
+    this.movementDirection = 0;
   }
 
   moveToRight() {
     const prevVel = this.vel.copy();
     this.vel.set(this.speed, 0);
+    this.movementDirection = 1;
   }
 
   moveToLeft() {
     const prevVel = this.vel.copy();
     this.vel.set(-this.speed, 0);
+    this.movementDirection = -1;
   }
 
   shouldMoveToLeft() {
@@ -612,6 +625,14 @@ class Player {
     return {
       width: this.width,
       height: this.height,
+    };
+  }
+
+  getCompleteData() {
+    return {
+      ...this.getCoords(),
+      ...this.getData(),
+      movementDirection: this.movementDirection,
     };
   }
 
@@ -664,6 +685,8 @@ class Ball {
 
     this.pos = createVector(x, y);
     this.vel = createVector(this.speed, -this.speed);
+
+    this.isFollowingPlayer = false;
   }
 
   draw() {
@@ -678,6 +701,10 @@ class Ball {
   update() {
     if (this.isBelowScreen()) return;
     if (!this.isActive()) return;
+    if (this.isFollowingPlayer) {
+      this.handleFollowPlayer();
+      return;
+    }
     this.pos.add(this.vel);
     this.detectCollisions();
     this.handleAcceleration();
@@ -854,6 +881,37 @@ class Ball {
         this.vel.x *= -1;
       }
     }
+  }
+
+  handleFollowPlayer() {
+    const { x, y, width, height } = this.playerReference.getCompleteData();
+    const playerXCenter = x + (width / 2);
+    const posY = y - (this.height / 2) - (height / 4);
+    this.pos.set(playerXCenter, posY);
+  }
+
+  handleKeyPressed(input) {
+    // 32 -> Space
+    if (input === 32) {
+      this.stopFollowPlayer();
+    }
+  }
+
+  stopFollowPlayer() {
+    this.isFollowingPlayer = false;
+    const { movementDirection } = this.playerReference.getCompleteData();
+    if (movementDirection < 0) {
+      this.vel.set(-this.speed, -this.speed);
+    } else if (movementDirection > 0) {
+      this.vel.set(this.speed, -this.speed);
+    } else {
+      this.vel.set(this.speed, -this.speed);
+    }
+  }
+
+  followPlayer(player) {
+    this.playerReference = player;
+    this.isFollowingPlayer = true;
   }
 
   setPlayerReference(player) {
