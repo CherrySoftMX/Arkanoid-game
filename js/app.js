@@ -2,7 +2,7 @@ const CANVAS_SETTINGS = {
 // Tamaño en porcentaje (1 = 100%)
   PREFERED_HEIGHT: 0.9,
   SCORE_DISPLAY_HEIGHT: 0.07,
-  ASPECT_RATIO_H: 10,
+  ASPECT_RATIO_H: 11,
   ASPECT_RATIO_V: 16,
 };
 
@@ -429,6 +429,8 @@ class ScoreManager {
   }
 
   saveHighestScore(score) {
+    const current_highest_score = this.getHighestScore();
+    if (score <= current_highest_score) return;
     localStorage.setItem('highest_score', score);
   }
 
