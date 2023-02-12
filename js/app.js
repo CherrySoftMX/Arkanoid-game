@@ -12,7 +12,7 @@ const CANVAS_SETTINGS = {
 const CONSTANTS = {
   PLAYER_SPEED: 4,
   BALL_SPEED: 4,
-  INITIAL_LEVEL: 0,
+  INITIAL_LEVEL: 2,
   PLAYER_SPEED_INCREASE: 0.25,
   BALL_SPEED_INCREASE: 0.8,
 };
@@ -758,22 +758,11 @@ class Ball {
   }
 
   onCollision({ type, x, y, width, height }) {
-    /*this.angle += 90;
-    if (this.angle > 360) {
-      this.angle = 45;
-    }
-    console.log('Colision');*/
-  
-    /**
-     * Refactor con vectores
-    */
-    //this.vel.x *= -1;
     const prevVel = this.vel.copy();
 
     switch (type) {
       case 'Block':
-        //this.vel.x *= -1;
-        this.vel.y *= -1;        
+        this.handleBlockCollision({x, y, width, height});
         break;
       case 'TopBorder':
         this.vel.y *= -1;
@@ -801,6 +790,30 @@ class Ball {
     }
 
     this.pos.sub(prevVel);
+  }
+
+  handleBlockCollision({ x, y, width, height }) {
+    const isLeftSideHit = this.iAmColliding({ x, y, width: 1, height });
+    const isRightSideHit = this.iAmColliding({ x: x + width, y, width: 1, height });
+    const isTopSideHit = this.iAmColliding({ x, y, width, height: 1 });
+    const isBottomSideHit = this.iAmColliding({ x, y: y + height, width, height: 1 });
+
+    if (isLeftSideHit || isRightSideHit) {
+      this.vel.x *= -1;
+      if (isBottomSideHit || isTopSideHit) {
+        this.vel.y *= -1;
+      }
+    } else if (isBottomSideHit || isTopSideHit) {
+      this.vel.y *= -1;
+      if (isLeftSideHit || isRightSideHit) {
+        this.vel.x *= -1;
+      }
+    }
+
+    console.log('left', isLeftSideHit);
+    console.log('right', isRightSideHit);
+    console.log('top', isTopSideHit);
+    console.log('bottom', isBottomSideHit);
   }
 
   setPlayerReference(player) {
