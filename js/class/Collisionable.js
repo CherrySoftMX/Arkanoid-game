@@ -10,7 +10,7 @@ export class Collisionable {
   }
 
   onCollision({ type = 'Unknown' }) {
-    console.log(`${this.type} collided with ${type}`);
+    //console.log(`${this.type} collided with ${type}`);
   }
 
   isActive() {
@@ -33,5 +33,13 @@ export class Collisionable {
 
   getType() {
     return this.type;
+  }
+
+  destroy() {
+    this.isDestroyed = true;
+  }
+
+  isActive() {
+    return !this.isDestroyed;
   }
 }

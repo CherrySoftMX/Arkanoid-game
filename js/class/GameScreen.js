@@ -101,6 +101,7 @@ export class GameScreen {
    */
   handlePowerUps() {
     this.powerUps = this.powerUps.filter(p => !p.isBelowScreen());
+    this.p5.text(`Power ups: ${this.powerUps.length}`, 10, 365);
   }
 
   generateMenu() {
@@ -178,7 +179,7 @@ export class GameScreen {
 
   handleMultipleBalls() {
     this.balls = this.balls.filter(b => !b.isBelowScreen());
-    this.p5.text(`Balls: ${this.balls.length}`, 100, 350);
+    this.p5.text(`Balls: ${this.balls.length}`, 10, 350);
   }
 
   handleKeyReleased() {
@@ -405,22 +406,29 @@ export class GameScreen {
     ball.forEach(ball => ball.increaseSpeed(bSpeed));
   }
 
-  update({ x, y, width, height }) {
+  update({ x, y, width, height, type = 'Unknown' }) {
     /**
      * DEBUG POWER UPS
      */
     const num = getRandomNum(1, 4);
-    if (num === 2) {
+    if (num === 2 && type === 'Block') {
       const p5 = this.p5;
       const canvasHeight = this.canvasHeight;
       console.log('Se genero un power up');
+
       const powerUp = new PowerUp({
         x,
         y,
         p5,
         canvasHeight,
       });
+      powerUp.addCollisionObject(this.player);
+      powerUp.addObserver(this);
+
       this.powerUps.push(powerUp);
+    } else if (type === 'PowerUp') {
+      console.log('Me notifico un PowerUp');
+      this.powerUps = this.powerUps.filter(p => p.isActive());
     }
   }
 

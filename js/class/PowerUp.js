@@ -43,6 +43,7 @@ export class PowerUp extends Collisionable {
   update() {
     if (this.isBelowScreen()) return;
     this.pos.add(this.vel);
+    this.detectCollisions();
   }
 
   detectCollisions() {
@@ -53,28 +54,44 @@ export class PowerUp extends Collisionable {
         if (this.iAmColliding({ x, y, width, height })) {
           obj.onCollision({ type: this.type });
           this.onCollision({ ...obj, x, y });
-          this.notifyAll();
           return;
         }
       }
     });
   }
 
+  // Changed to make it work with rectangles instead of a circle and a rectangle
   iAmColliding({ x, y, width, height }) {
     const myX = this.pos.x;
     const myY = this.pos.y;
 
-    const verticalDistance = Math.floor((y + (height / 2)) - myY );
+    const verticalDistance = Math.floor((y + (height / 2)) - (myY + (this.height / 2)) );
     const fixedVerticalDistance = verticalDistance < 0 ? verticalDistance * (-1) : verticalDistance;
     const isVerticalCollision = fixedVerticalDistance < ((this.height / 2) + (height / 2));
-    const isHorizontalCollision = myX + (this.width / 2) >= x && (myX - this.width / 2) <= (x + width);
+
+    const horizontalDistance = Math.floor(x + (width / 2) - (myX + (this.width / 2)));
+    const fixedHorizontalDistance = horizontalDistance < 0 ? -horizontalDistance : horizontalDistance;
+    const isHorizontalCollision = fixedHorizontalDistance < (this.width / 2) + (width / 2);
 
     const isCollision = isVerticalCollision && isHorizontalCollision;
     return isCollision;
   }
 
+  onCollision({ type = 'Unknown' }) {
+    console.log(`${this.type} collided with ${type}`);
+
+    if (type === 'Player') {
+      this.destroy();
+      this.notifyAll();
+    }
+  }
+
   addCollisionObject(obj) {
     this.collisionObjects.push(obj);
+  }
+
+  addObserver(obj) {
+    this.observers.push(obj);
   }
 
   notifyAll() {

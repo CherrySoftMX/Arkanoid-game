@@ -62,7 +62,7 @@ export class Block {
     const { x, y } = this.getCoords();
     const { width, height } = this.getData();
     const scoreValue = this.scoreValue;
-    return { x, y, width, height, scoreValue };
+    return { x, y, width, height, scoreValue, type: this.type };
   }
 
   addObserver(obj) {

@@ -50,8 +50,8 @@ export class Ball {
     this.update();
     this.p5.ellipse(this.pos.x, this.pos.y, this.width, this.height);
 
-    this.p5.text(this.vel.x, 10, this.container.height - 100);
-    this.p5.text(this.vel.y, 10, this.container.height - 85);
+    this.p5.text(`Vel x: ${this.vel.x}`, 10, this.container.height - 100);
+    this.p5.text(`Vel y: ${this.vel.y}`, 10, this.container.height - 85);
   }
 
   update() {

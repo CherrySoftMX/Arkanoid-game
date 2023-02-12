@@ -44,8 +44,6 @@ export class Player {
     this.pos.add(this.vel);
     this.p5.fill(255);
     this.p5.rect(this.pos.x, this.pos.y, this.width, this.height, this.height * 0.3);
-
-    this.p5.text(this.pos.x, 10, 400);
   }
 
   controlInputs(input) {
