@@ -59,4 +59,8 @@ export class ScoreManager {
     return String(num).padStart(spaces, '0');
   }
 
+  resetScore() {
+    this.score = 0;
+  }
+
 }
