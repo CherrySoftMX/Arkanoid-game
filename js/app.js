@@ -3,6 +3,8 @@ const CANVAS = {
   PREFERED_HEIGHT: 0.9,
   ASPECT_RATIO_H: 9,
   ASPECT_RATIO_V: 16,
+  NUM_BLOCKS_H: 5,
+  NUM_BLOCKS_V: 2,
 };
 let game;
 
@@ -63,6 +65,8 @@ class GameScreen {
 
     this.player = new Player(this.canvasWidth, this.canvasHeight, x, y);
     this.ball = new Ball(this.canvasWidth, this.canvasHeight, x, y, this.player);
+
+    this.blocks = this.generateBlocks({ options, canvasWidth: this.canvasWidth });
   }
 
   draw() {
@@ -72,6 +76,7 @@ class GameScreen {
   
     this.player.draw();
     this.ball.draw();
+    this.drawBlocks();
   
     this.handleKeyPressed();
     this.handleEndGame();
@@ -82,6 +87,7 @@ class GameScreen {
       push();
       textAlign(CENTER, CENTER);
       textSize(20);
+      fill(255);
       text('GAME OVER', this.canvasWidth / 2, this.canvasHeight / 2);
       pop();
     }
@@ -91,6 +97,35 @@ class GameScreen {
     if (keyIsPressed) {
       this.player.controlInputs(keyCode);
     }
+  }
+
+  generateBlocks({ options, canvasWidth }) {
+    const blocks = [];
+    const numOfBlocksHorizontal = options.NUM_BLOCKS_H;
+    const numOfBlocksVertical = options.NUM_BLOCKS_V;
+    const blocksMargin = 1;
+    const blocksWidth = Math.ceil((canvasWidth - blocksMargin * numOfBlocksHorizontal * 2) / numOfBlocksHorizontal);
+    const blocksHeight = 30;
+
+    let blockX = blocksMargin;
+    let blockY = blocksMargin;
+    for (let i = 0; i < numOfBlocksVertical; i++) {
+      blockX = blocksMargin * 2;
+      for (let j = 0; j < numOfBlocksHorizontal; j++) {
+        blocks.push(
+          new Block(blocksWidth, blocksHeight, blockX, blockY),
+        );
+        blockX += blocksWidth + blocksMargin;
+      }
+      blockY += blocksHeight + blocksMargin;
+    }
+    return blocks;
+  }
+
+  drawBlocks() {
+    this.blocks.forEach(block => {
+     block.draw(); 
+    });
   }
 
 }
@@ -272,12 +307,40 @@ class Ball {
     text('V distance: ' + verticalDistance, 10, 25);
     const isAbovePlayer = (this.x + this.width / 2) >= playerRef.x && (this.x - this.width / 2) <= playerRef.x + this.playerReference.getWidth();
     text('is above: ' + isAbovePlayer, 10, 40);
+    // Collision detection: 
+    // - is the ball above or below the player and the vertical distance is low?
     const isCollision = verticalDistance < 1 && isAbovePlayer;
     return isCollision;
   }
 
   setPlayerReference(player) {
     this.playerReference = player;
+  }
+
+}
+
+/**
+ * Block class
+ */
+class Block {
+
+  constructor(width, height, x, y) {
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+
+    this.isDestroyed = false;
+  }
+
+  draw() {
+    if (this.isDestroyed) return;
+    fill(255, 85, 49);
+    rect(this.x, this.y, this.width, this.height);
+  }
+
+  destroy() {
+    this.isDestroyed = true;
   }
 
 }
