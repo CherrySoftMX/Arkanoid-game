@@ -19,21 +19,36 @@ export class Block {
     this.blockType = blockType;
 
     this.type = 'Block';
+
+    this.isTransitioning = false;
   }
 
   draw() {
     if (this.isDestroyed) return;
-    this.p5.fill(BLOCK_TYPES[this.blockType].color);
+    if (!this.isTransitioning) {
+      this.p5.fill(BLOCK_TYPES[this.blockType].color);
+    } else {
+      this.p5.fill('#FEFEFE');
+    }
     this.p5.strokeWeight(1);
     this.p5.rect(this.x, this.y, this.width, this.height);
   }
 
   onCollision() {
+    if (this.isTransitioning) return;
+
     this.durability -= 1;
+    this.isTransitioning = true;
+
     this.notifyAll();
-    if (this.durability === 0) {
-      this.destroy();
-    }
+
+    // Change block color for 50 milliseconds to provide visual feedback
+    setTimeout(() => {
+      this.isTransitioning = false;
+      if (this.durability === 0) {
+        this.destroy();
+      }
+    }, 50);
   }
 
   destroy() {
@@ -76,6 +91,10 @@ export class Block {
 
   getType() {
     return this.type;
+  }
+
+  getBlockType() {
+    return this.blockType;
   }
 
 }
