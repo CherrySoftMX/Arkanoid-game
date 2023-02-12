@@ -1,20 +1,25 @@
+'use strict';
+import { GameScreen } from './class/GameScreen.js'
+import { CANVAS_SETTINGS } from './constants/constants.js';
+
 let game;
 
-/******************
- * P5.js control functions
- */
-function setup() {
-  game = new GameScreen(CANVAS_SETTINGS);
-};
+new p5((p) => {
 
-function draw() {
-  game.draw();
-};
+  p.setup = () => {
+    game = new GameScreen(CANVAS_SETTINGS, p);
+  };
 
-function keyReleased() {
-  game.handleKeyReleased();
-}
+  p.draw = () => {
+    game.draw();
+  };
 
-function keyPressed() {
-  game.handleKeyPressed();
-}
+  p.keyReleased = () => {
+    game.handleKeyReleased();
+  };
+
+  p.keyPressed = () => {
+    game.handleKeyPressed();
+  };
+
+});

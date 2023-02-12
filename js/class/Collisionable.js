@@ -1,4 +1,4 @@
-class Collisionable {
+export class Collisionable {
   constructor({ width, height, x, y, type = 'Generic' }) {
     this.width = width;
     this.height = height;

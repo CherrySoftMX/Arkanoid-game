@@ -1,6 +1,11 @@
-class Player {
+import { CONSTANTS } from '../constants/constants.js';
+import { calculateCoordsToCenterItem } from '../utils/utils.js';
+
+export class Player {
   
-  constructor(canvasWidth, canvasHeight, canvasX, canvasY) {
+  constructor(canvasWidth, canvasHeight, canvasX, canvasY, p5) {
+    this.p5 = p5;
+
     this.width = Math.ceil(canvasWidth * 0.2);
     this.height = 20;
 
@@ -26,8 +31,8 @@ class Player {
 
     this.type = 'Player';
 
-    this.pos = createVector(this.x, this.y);
-    this.vel = createVector(0, 0);
+    this.pos = p5.createVector(this.x, this.y);
+    this.vel = p5.createVector(0, 0);
 
     // -1 -> Izquierda
     // 0 -> Quieto
@@ -37,16 +42,16 @@ class Player {
 
   draw() {
     this.pos.add(this.vel);
-    fill(255);
-    rect(this.pos.x, this.pos.y, this.width, this.height, this.height * 0.3);
+    this.p5.fill(255);
+    this.p5.rect(this.pos.x, this.pos.y, this.width, this.height, this.height * 0.3);
 
-    text(this.pos.x, 10, 400);
+    this.p5.text(this.pos.x, 10, 400);
   }
 
   controlInputs(input) {
-    if (input === RIGHT_ARROW && this.shouldMoveToRight()) {
+    if (input === this.p5.RIGHT_ARROW && this.shouldMoveToRight()) {
       this.moveToRight();
-    } else if (input === LEFT_ARROW && this.shouldMoveToLeft()) {
+    } else if (input === this.p5.LEFT_ARROW && this.shouldMoveToLeft()) {
       this.moveToLeft();
     }
     const prevVel = this.vel.copy();

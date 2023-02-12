@@ -1,13 +1,23 @@
-class GameScreen {
+import { CONSTANTS, LEVELS, BLOCK_TYPES, CANVAS_SETTINGS } from '../constants/constants.js';
+import { calculateCoordsToCenterItem } from '../utils/utils.js';
+import { ScoreManager } from './ScoreManager.js';
+import { Block } from './Block.js';
+import { Player } from './Player.js';
+import { Ball } from './Ball.js';
+import { Collisionable } from './Collisionable.js';
+
+export class GameScreen {
   
-  constructor(options) {
+  constructor(options, p5) {
+    this.p5 = p5;
+
     this.canvasHeight = window.innerHeight * options.PREFERED_HEIGHT;
     this.canvasWidth = (this.canvasHeight * options.ASPECT_RATIO_H) / options.ASPECT_RATIO_V;
     // La coordenada (y) a partir de la cual empieza el area de juego
-    this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * CANVAS_SETTINGS.SCORE_DISPLAY_HEIGHT);
+    this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * options.SCORE_DISPLAY_HEIGHT);
     this.SCORE_AREA_HEIGHT = this.CANVAS_GAME_AREA_Y;
 
-    this.canvas = createCanvas(this.canvasWidth, this.canvasHeight);
+    this.canvas = p5.createCanvas(this.canvasWidth, this.canvasHeight);
 
     const { x, y } = calculateCoordsToCenterItem({
       windowWidth: window.innerWidth,
@@ -23,7 +33,7 @@ class GameScreen {
 
     this.currentLevel = CONSTANTS.INITIAL_LEVEL;
 
-    this.scoreManager = new ScoreManager(this.canvasWidth, this.canvasHeight, this.SCORE_AREA_HEIGHT);
+    this.scoreManager = new ScoreManager(this.canvasWidth, this.canvasHeight, this.SCORE_AREA_HEIGHT, p5);
 
     // Generate game objects
     const {
@@ -53,18 +63,18 @@ class GameScreen {
   }
 
   drawMenu() {
-    push();
-    background(0, 0, 0);
-    fill(254, 254, 254);
-    textAlign(CENTER, CENTER);
-    textSize(this.canvasWidth * 0.07);
-    text('ARKANOID ATTEMPT', this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
-    pop();
+    this.p5.push();
+    this.p5.background(0, 0, 0);
+    this.p5.fill(254, 254, 254);
+    this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
+    this.p5.textSize(this.canvasWidth * 0.07);
+    this.p5.text('ARKANOID ATTEMPT', this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
+    this.p5.pop();
   }
 
   drawGameplay() {
-    background(0, 0, 0);
-    fill(255);
+    this.p5.background(0, 0, 0);
+    this.p5.fill(255);
   
     this.player.draw();
     this.ball.draw();
@@ -86,7 +96,7 @@ class GameScreen {
       objectWidth: btnWidth,
     });
 
-    this.playBtn = createButton('Play');
+    this.playBtn = this.p5.createButton('Play');
     this.playBtn.position(x, y + btnHeight);
     this.playBtn.size(btnWidth, btnHeight);
     this.playBtn.mouseClicked(this.onBtnPlayClick.bind(this));
@@ -109,9 +119,9 @@ class GameScreen {
   }
 
   handleKeyPressed() {
-    if (keyIsPressed) {
-      this.player.controlInputs(keyCode);
-      this.ball.handleKeyPressed(keyCode);
+    if (this.p5.keyIsPressed) {
+      this.player.controlInputs(this.p5.keyCode);
+      this.ball.handleKeyPressed(this.p5.keyCode);
     }
   }
 
@@ -120,12 +130,12 @@ class GameScreen {
   }
 
   displayCenteredText(message = 'Debug message') {
-    push();
-    textAlign(CENTER, CENTER);
-    textSize(20);
-    fill(255);
-    text(message, this.canvasWidth / 2, this.canvasHeight / 2);
-    pop();
+    this.p5.push();
+    this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
+    this.p5.textSize(20);
+    this.p5.fill(255);
+    this.p5.text(message, this.canvasWidth / 2, this.canvasHeight / 2);
+    this.p5.pop();
   }
 
   isLevelCleared() {
@@ -213,6 +223,7 @@ class GameScreen {
           BLOCK_TYPES[blockType].score,
           BLOCK_TYPES[blockType].durability,
           blockType,
+          this.p5,
         );
         if (levelRow[j] === '*') {
           newBlock.destroy();
@@ -237,6 +248,7 @@ class GameScreen {
       this.canvasHeight,
       this.canvasX,
       this.canvasY,
+      this.p5,
     );
 
     const newBall = new Ball(
@@ -245,6 +257,7 @@ class GameScreen {
       this.canvasX,
       this.canvasY,
       newPlayer,
+      this.p5,
     );
     newBall.followPlayer(newPlayer);
 
@@ -318,11 +331,11 @@ class GameScreen {
 
   drawBlocks() {
     if (this.blocks.length > 0 && !this.isLevelCleared()) {
-      push();
+      this.p5.push();
       this.blocks.forEach(block => {
         block.draw(); 
        });
-      pop();
+      this.p5.pop();
     }
   }
 

@@ -1,5 +1,7 @@
-class ScoreManager {
-  constructor(canvasWidth, canvasHeight, scoreAreaHeight) {
+export class ScoreManager {
+  constructor(canvasWidth, canvasHeight, scoreAreaHeight, p5) {
+    this.p5 = p5;
+
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.scoreAreaHeight = scoreAreaHeight;
@@ -17,18 +19,18 @@ class ScoreManager {
   }
 
   draw() {
-    fill(94, 92, 92);
-    rect(0, 0, this.canvasWidth, this.scoreAreaHeight);
+    this.p5.fill(94, 92, 92);
+    this.p5.rect(0, 0, this.canvasWidth, this.scoreAreaHeight);
 
-    fill(255);
-    textSize(12);
-    textAlign(LEFT, CENTER);
-    text(
+    this.p5.fill(255);
+    this.p5.textSize(12);
+    this.p5.textAlign(this.p5.LEFT, this.p5.CENTER);
+    this.p5.text(
       'Score: ' + this.formatNumber(this.getScore(), 5),
       20,
       this.scoreAreaHeight / 2,
     );
-    text(
+    this.p5.text(
       'Highest Score: ' + this.formatNumber(this.highestScore, 5),
       (this.canvasWidth / 2) + 20,
       this.scoreAreaHeight / 2,

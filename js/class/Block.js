@@ -1,6 +1,10 @@
-class Block {
+import { BLOCK_TYPES } from '../constants/constants.js';
 
-  constructor(width, height, x, y, score = 100, durability = 1, blockType = '_') {
+export class Block {
+
+  constructor(width, height, x, y, score = 100, durability = 1, blockType = '_', p5) {
+    this.p5 = p5;
+
     this.width = width;
     this.height = height;
     this.x = x;
@@ -19,9 +23,9 @@ class Block {
 
   draw() {
     if (this.isDestroyed) return;
-    fill(BLOCK_TYPES[this.blockType].color);
-    strokeWeight(1);
-    rect(this.x, this.y, this.width, this.height);
+    this.p5.fill(BLOCK_TYPES[this.blockType].color);
+    this.p5.strokeWeight(1);
+    this.p5.rect(this.x, this.y, this.width, this.height);
   }
 
   onCollision() {

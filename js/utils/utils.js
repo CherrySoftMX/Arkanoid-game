@@ -1,4 +1,4 @@
-const calculateCoordsToCenterItem = ({
+export const calculateCoordsToCenterItem = ({
   windowWidth,
   windowHeight,
   objectWidth,
@@ -12,6 +12,6 @@ const calculateCoordsToCenterItem = ({
   };
 };
 
-const getRandomNum = (min, max) => {
+export const getRandomNum = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min);
 }

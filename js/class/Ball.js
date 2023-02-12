@@ -1,5 +1,10 @@
-class Ball {
-  constructor(canvasWidth, canvasHeight, canvasX, canvasY, player) {
+import { calculateCoordsToCenterItem, getRandomNum } from '../utils/utils.js';
+import { CONSTANTS } from '../constants/constants.js';
+
+export class Ball {
+  constructor(canvasWidth, canvasHeight, canvasX, canvasY, player, p5) {
+    this.p5 = p5;
+
     this.width = 20;
     this.height = this.width;
 
@@ -32,19 +37,19 @@ class Ball {
 
     this.collisionObjects = [];
 
-    this.pos = createVector(x, y);
-    this.vel = createVector(this.speed, -this.speed);
+    this.pos = p5.createVector(x, y);
+    this.vel = p5.createVector(this.speed, -this.speed);
 
     this.isFollowingPlayer = false;
   }
 
   draw() {
-    fill(255);
+    this.p5.fill(255);
     this.update();
-    ellipse(this.pos.x, this.pos.y, this.width, this.height);
+    this.p5.ellipse(this.pos.x, this.pos.y, this.width, this.height);
 
-    text(this.vel.x, 10, this.container.height - 100);
-    text(this.vel.y, 10, this.container.height - 85);
+    this.p5.text(this.vel.x, 10, this.container.height - 100);
+    this.p5.text(this.vel.y, 10, this.container.height - 85);
   }
 
   update() {
@@ -192,7 +197,7 @@ class Ball {
         this.vel.x = this.speed * (-acceleration);
         break;
       case 'Player':
-        const relativeX = map(this.pos.x, x, x + width, 0, 40);
+        const relativeX = this.p5.map(this.pos.x, x, x + width, 0, 40);
         let newXDirection = 0;
         let ySpeed = -this.speed;
         if (relativeX < 10) {
