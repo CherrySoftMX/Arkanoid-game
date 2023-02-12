@@ -1,18 +1,24 @@
-const CANVAS = {
+const CANVAS_SETTINGS = {
 // Size in percentaje (1 = 100%)
   PREFERED_HEIGHT: 0.9,
   ASPECT_RATIO_H: 9,
   ASPECT_RATIO_V: 16,
   NUM_BLOCKS_H: 5,
-  NUM_BLOCKS_V: 2,
+  NUM_BLOCKS_V: 5,
 };
+
+const CONSTANTS = {
+  PLAYER_SPEED: 3,
+  BALL_SPEED: 4,
+};
+
 let game;
 
 /******************
  * P5.js control functions
  */
 function setup() {
-  game = new GameScreen(CANVAS);
+  game = new GameScreen(CANVAS_SETTINGS);
 };
 
 function draw() {
@@ -67,6 +73,36 @@ class GameScreen {
     this.ball = new Ball(this.canvasWidth, this.canvasHeight, x, y, this.player);
 
     this.blocks = this.generateBlocks({ options, canvasWidth: this.canvasWidth });
+
+    // Colisiones de la bola
+    this.ball.addCollisionObject(this.player);
+    this.blocks.forEach(block => this.ball.addCollisionObject(block));
+
+    // Bordes de la pantalla
+    const leftBorder = new Collisionable({
+      width: 10,
+      height: this.canvasHeight,
+      x: -10,
+      y: 0,
+    });
+
+    const rightBorder = new Collisionable({
+      width: 50,
+      height: this.canvasHeight,
+      x: this.canvasWidth,
+      y: 0,
+    });
+
+    const topBorder = new Collisionable({
+      width: this.canvasWidth,
+      height: 10,
+      x: 0,
+      y: -10
+    });
+
+    this.ball.addCollisionObject(leftBorder);
+    this.ball.addCollisionObject(rightBorder);
+    this.ball.addCollisionObject(topBorder);
   }
 
   draw() {
@@ -90,6 +126,14 @@ class GameScreen {
       fill(255);
       text('GAME OVER', this.canvasWidth / 2, this.canvasHeight / 2);
       pop();
+    } else if (this.blocks.filter(b => b.isActive()).length === 0) {
+      push();
+      this.ball.destroy();
+      textAlign(CENTER, CENTER);
+      textSize(20);
+      fill(255);
+      text('YOU WIN!', this.canvasWidth / 2, this.canvasHeight / 2);
+      pop();
     }
   }
 
@@ -103,14 +147,14 @@ class GameScreen {
     const blocks = [];
     const numOfBlocksHorizontal = options.NUM_BLOCKS_H;
     const numOfBlocksVertical = options.NUM_BLOCKS_V;
-    const blocksMargin = 1;
-    const blocksWidth = Math.ceil((canvasWidth - blocksMargin * numOfBlocksHorizontal * 2) / numOfBlocksHorizontal);
+    const blocksMargin = 0;
+    const blocksWidth = canvasWidth / numOfBlocksHorizontal;
     const blocksHeight = 30;
 
     let blockX = blocksMargin;
     let blockY = blocksMargin;
     for (let i = 0; i < numOfBlocksVertical; i++) {
-      blockX = blocksMargin * 2;
+      blockX = blocksMargin;
       for (let j = 0; j < numOfBlocksHorizontal; j++) {
         blocks.push(
           new Block(blocksWidth, blocksHeight, blockX, blockY),
@@ -146,17 +190,23 @@ class Player {
       y: canvasY,
     };
 
-    this.x = 0;
-    this.y = canvasHeight - this.height - 1;
-    this.speed = 2;
+    const { x } = calculateCoordsToCenterItem({
+      windowWidth: canvasWidth,
+      windowHeight: canvasHeight,
+      objectHeight: this.height,
+      objectWidth: this.width,
+    });
 
-    console.log('player x', this.x);
-    console.log('player y', this.y);
+    this.x = x;
+    this.y = canvasHeight - this.height - 1;
+    this.speed = CONSTANTS.PLAYER_SPEED;
+
+    this.isDestroyed = false;
   }
 
   draw() {
     fill(255);
-    rect(this.x, this.y, this.width, this.height);
+    rect(this.x, this.y, this.width, this.height, this.height * 0.3);
   }
 
   controlInputs(input) {
@@ -185,6 +235,14 @@ class Player {
     return isInsideScreen;
   }
 
+  onCollision() {
+    console.log('Player collided with something');
+  }
+
+  isActive() {
+    return !this.isDestroyed;
+  }
+
   getX() {
     return this.x;
   }
@@ -197,6 +255,13 @@ class Player {
     return {
       x: this.getX(),
       y: this.getY(),
+    };
+  }
+
+  getData() {
+    return {
+      width: this.width,
+      height: this.height,
     };
   }
 
@@ -231,14 +296,19 @@ class Ball {
     this.x = x;
     this.y = y;
     
-    this.speed = 2;
+    this.speed = CONSTANTS.BALL_SPEED;
 
     this.playerReference = player;
 
     this.isOutOfField = false;
 
     const possibleAngles = [45, 135, 225, 315];
-    this.angle = possibleAngles[getRandomNum(0, 5)];
+    const randomNum = getRandomNum(0, 4);
+    this.angle = possibleAngles[randomNum];
+
+    this.collisionObjects = [];
+
+    this.isDestroyed = false;
   }
 
   draw() {
@@ -248,14 +318,9 @@ class Ball {
   }
 
   update() {
-    text('Angle: ' + this.angle, 10, 10);
     if (this.isBelowScreen()) return;
-    if (!this.shouldMove() || this.collisionDetected()) {
-      this.angle += 90;
-      if (this.angle > 360) {
-        this.angle = 45;
-      }
-    }
+    if (!this.isActive()) return;
+    this.detectCollisions();
     if (this.angle === 45) {
       this.x = this.x + this.speed;
       this.y = this.y + this.speed;
@@ -265,7 +330,7 @@ class Ball {
     } else if (this.angle === 225) {
       this.x = this.x - this.speed;
       this.y = this.y - this.speed;
-    } else {
+    } else if (this.angle === 315) {
       this.x = this.x + this.speed;
       this.y = this.y - this.speed;
     }
@@ -300,21 +365,51 @@ class Ball {
     return this.isOutOfField;
   }
 
-  collisionDetected() {
-    // crappy collision detection
-    const playerRef = this.playerReference.getCoords();
-    const verticalDistance = Math.floor(playerRef.y - this.y - (this.height / 2));
-    text('V distance: ' + verticalDistance, 10, 25);
-    const isAbovePlayer = (this.x + this.width / 2) >= playerRef.x && (this.x - this.width / 2) <= playerRef.x + this.playerReference.getWidth();
-    text('is above: ' + isAbovePlayer, 10, 40);
-    // Collision detection: 
-    // - is the ball above or below the player and the vertical distance is low?
-    const isCollision = verticalDistance < 1 && isAbovePlayer;
+  isActive() {
+    return !this.isDestroyed;
+  }
+
+  destroy() {
+    this.isDestroyed = true;
+  }
+
+  detectCollisions() {
+    this.collisionObjects.forEach(obj => {
+      if (obj.isActive()) {
+        const { x, y } = obj.getCoords();
+        const { width, height } = obj.getData();
+        if (this.iAmColliding({ x, y, width, height })) {
+          obj.onCollision();
+          this.onCollision();
+          return;
+        }
+      }
+    });
+  }
+
+  iAmColliding({ x, y, width, height }) {
+    const verticalDistance = Math.floor((y + (height / 2)) - this.y );
+    const fixedVerticalDistance = verticalDistance < 0 ? verticalDistance * (-1) : verticalDistance;
+    const isVerticalCollision = fixedVerticalDistance < ((this.height / 2) + (height / 2));
+    const isHorizontalCollision = this.x + (this.width / 2) >= x && (this.x - this.width / 2) <= (x + width);
+
+    const isCollision = isVerticalCollision && isHorizontalCollision;
     return isCollision;
+  }
+
+  onCollision() {
+    this.angle += 90;
+    if (this.angle > 360) {
+      this.angle = 45;
+    }
   }
 
   setPlayerReference(player) {
     this.playerReference = player;
+  }
+
+  addCollisionObject(obj) {
+    this.collisionObjects.push(obj);
   }
 
 }
@@ -336,11 +431,70 @@ class Block {
   draw() {
     if (this.isDestroyed) return;
     fill(255, 85, 49);
+    strokeWeight(1);
     rect(this.x, this.y, this.width, this.height);
+  }
+
+  onCollision() {
+    this.destroy();
   }
 
   destroy() {
     this.isDestroyed = true;
   }
 
+  isActive() {
+    return !this.isDestroyed;
+  }
+
+  getCoords() {
+    return {
+      x: this.x,
+      y: this.y,
+    };
+  }
+
+  getData() {
+    return {
+      width: this.width,
+      height: this.height,
+    };
+  }
+
+}
+
+/**
+ * Generic class for collisionable
+ */
+class Collisionable {
+  constructor({ width, height, x, y }) {
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+
+    this.isDestroyed = false;
+  }
+
+  onCollision() {
+    console.log('Collided');
+  }
+
+  isActive() {
+    return !this.isDestroyed;
+  }
+
+  getCoords() {
+    return {
+      x: this.x,
+      y: this.y,
+    };
+  }
+
+  getData() {
+    return {
+      width: this.width,
+      height: this.height,
+    };
+  }
 }
