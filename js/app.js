@@ -1,10 +1,9 @@
 const CANVAS_SETTINGS = {
 // Tamaño en porcentaje (1 = 100%)
   PREFERED_HEIGHT: 0.9,
+  SCORE_DISPLAY_HEIGHT: 0.07,
   ASPECT_RATIO_H: 10,
   ASPECT_RATIO_V: 16,
-  NUM_BLOCKS_H: 5,
-  NUM_BLOCKS_V: 5,
 };
 
 const CONSTANTS = {
@@ -83,6 +82,8 @@ class GameScreen {
   constructor(options) {
     this.canvasHeight = window.innerHeight * options.PREFERED_HEIGHT;
     this.canvasWidth = (this.canvasHeight * options.ASPECT_RATIO_H) / options.ASPECT_RATIO_V;
+    this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * CANVAS_SETTINGS.SCORE_DISPLAY_HEIGHT);
+    this.SCORE_AREA_HEIGHT = this.CANVAS_GAME_AREA_Y;
 
     this.canvas = createCanvas(this.canvasWidth, this.canvasHeight);
 
@@ -100,7 +101,7 @@ class GameScreen {
 
     this.currentLevel = CONSTANTS.INITIAL_LEVEL;
 
-    this.scoreManager = new ScoreManager(this.canvasWidth, this.canvasHeight);
+    this.scoreManager = new ScoreManager(this.canvasWidth, this.canvasHeight, this.SCORE_AREA_HEIGHT);
 
     // Generate game objects
     const {
@@ -206,7 +207,8 @@ class GameScreen {
 
     let levelRow = structure[0];
     let blockX = blocksMargin;
-    let blockY = blocksMargin;
+    // Los bloques comienzan a dibujarse en el area de juego
+    let blockY = blocksMargin + this.CANVAS_GAME_AREA_Y;
     console.log(structure.length);
     for (let i = 0; i < structure.length; i++) {
       levelRow = structure[i];
@@ -304,7 +306,7 @@ class GameScreen {
       width: this.canvasWidth,
       height: 10,
       x: 0,
-      y: -10
+      y: -10 + this.CANVAS_GAME_AREA_Y,
     });
 
     return {
@@ -330,9 +332,10 @@ class GameScreen {
  * Score manager class
  */
 class ScoreManager {
-  constructor(canvasWidth, canvasHeight) {
+  constructor(canvasWidth, canvasHeight, scoreAreaHeight) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
+    this.scoreAreaHeight = scoreAreaHeight;
 
     this.score = 0;
   }
@@ -346,9 +349,13 @@ class ScoreManager {
   }
 
   draw() {
+    fill(94, 92, 92);
+    rect(0, 0, this.canvasWidth, this.scoreAreaHeight);
+
     fill(255);
-    textSize(14);
-    text('Score: ' + this.getScore(), 10, this.canvasHeight - 100);
+    textSize(12);
+    textAlign(CENTER, CENTER);
+    text('Score: ' + this.getScore(), this.canvasWidth / 2, this.scoreAreaHeight / 2);
   }
 
   update({ scoreValue }) {
@@ -630,9 +637,9 @@ class Block {
 
   draw() {
     if (this.isDestroyed) return;
-    //fill(255, 85, 49);
-    fill(94, 92, 92);
-    stroke(254, 254, 254);
+    fill(255, 85, 49);
+    //fill(94, 92, 92);
+    //stroke(254, 254, 254);
     strokeWeight(1);
     rect(this.x, this.y, this.width, this.height);
   }
