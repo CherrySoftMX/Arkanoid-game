@@ -1,5 +1,6 @@
-import { CONSTANTS, LEVELS, BLOCK_TYPES, CANVAS_SETTINGS } from '../constants/constants.js';
-import { calculateCoordsToCenterItem, getRandomNum } from '../utils/utils.js';
+import { CONSTANTS, BLOCK_TYPES, CANVAS_SETTINGS } from '../constants/constants.js';
+import { LEVELS } from '../constants/levels.js';
+import { calculateCoordsToCenterItem } from '../utils/utils.js';
 import { ScoreManager } from './ScoreManager.js';
 import { Block } from './Block.js';
 import { Player } from './Player.js';
@@ -185,15 +186,15 @@ export class GameScreen {
       this.scoreManager.saveHighestScore(this.scoreManager.getScore());
     }
 
-    // Reset the game if player loses all lives
-    if (this.lives < 1) {
-      this.currentLevel = CONSTANTS.INITIAL_LEVEL;
-      this.scoreManager.resetScore();
-      this.lives = CONSTANTS.PLAYER_INITIAL_LIVES;
-    }
-
     // Load next level after 3.5 seconds
     setTimeout(() => {
+      // Reset the game if player loses all lives
+      if (this.lives < 1) {
+        this.currentLevel = CONSTANTS.INITIAL_LEVEL;
+        this.scoreManager.resetScore();
+        this.lives = CONSTANTS.PLAYER_INITIAL_LIVES;
+      }
+
       const {
         blocks,
         player,

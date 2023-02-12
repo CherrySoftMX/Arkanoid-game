@@ -42,13 +42,13 @@ export class Block {
 
     this.notifyAll();
 
-    // Change block color for 50 milliseconds to provide visual feedback
+    // Change block color for 30 milliseconds to provide visual feedback
     setTimeout(() => {
       this.isTransitioning = false;
       if (this.durability === 0) {
         this.destroy();
       }
-    }, 50);
+    }, 30);
   }
 
   destroy() {
