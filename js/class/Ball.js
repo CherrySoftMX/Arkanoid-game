@@ -67,7 +67,7 @@ export class Ball {
   handleAcceleration() {
     const accX = this.vel.x < 0 ? -this.vel.x : this.vel.x;
     const accY = this.vel.y < 0 ? -this.vel.y : this.vel.y;
-    const DECELARATION_TIME = 90;
+    const DECELARATION_TIME = 90; // 1.5 segundos
     if (accX > this.baseSpeed) {
       const speedDiferenceX = accX - this.baseSpeed;
       const deceleration = speedDiferenceX / DECELARATION_TIME; // 60 -> frames -> 1 segundo
@@ -278,6 +278,28 @@ export class Ball {
 
   increaseSpeed(increase) {
     this.speed += increase;
+  }
+
+  setPositionVector(vector) {
+    this.pos = vector;
+  }
+
+  getPositionVector() {
+    return this.pos.copy();
+  }
+
+  getSpeedVector() {
+    return this.vel.copy();
+  }
+
+  setSpeedVector(vector) {
+    const previousSpeed = this.vel.copy();
+    this.vel = vector;
+    this.pos.sub(previousSpeed);
+  }
+
+  getCollisionObjects() {
+    return this.collisionObjects;
   }
 
 }

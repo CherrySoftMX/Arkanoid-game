@@ -44,7 +44,7 @@ export class GameScreen {
 
     this.blocks = blocks;
     this.player = player;
-    this.ball = ball;
+    this.balls = [ball];
 
     this.isLoadingNextLevel = false;
     this.isOnMenu = true;
@@ -77,11 +77,12 @@ export class GameScreen {
     this.p5.fill(255);
   
     this.player.draw();
-    this.ball.draw();
+    this.balls.forEach(ball => ball.draw());
+    
     this.drawBlocks();
     this.scoreManager.draw();
+    this.handleMultipleBalls();
   
-    //this.handleKeyPressed();
     this.handleEndGame();
   }
 
@@ -108,12 +109,13 @@ export class GameScreen {
   }
 
   handleEndGame() {
-    if (this.ball.isBelowScreen()) {
+    const numOfBalls = this.balls.length;
+    if (numOfBalls === 0) {
       this.displayCenteredText('GAME OVER');
       this.scoreManager.saveHighestScore(this.scoreManager.getScore());
       this.scoreManager.score = 0;
     } else if (this.isLevelCleared()) {
-      this.ball.destroy();
+      this.balls.forEach(ball => ball.destroy());
       this.startNextLevelLoad();
     }
   }
@@ -121,8 +123,45 @@ export class GameScreen {
   handleKeyPressed() {
     if (this.p5.keyIsPressed) {
       this.player.controlInputs(this.p5.keyCode);
-      this.ball.handleKeyPressed(this.p5.keyCode);
+      this.balls.forEach(ball => ball.handleKeyPressed(this.p5.keyCode));
+
+      /**
+       * DEBUG: ADD MORE BALLS (c)
+       */
+      if (this.p5.keyCode === 67) {
+        const currentBall = this.balls[0];
+
+        const newBall1 = new Ball(
+          this.canvasWidth,
+          this.canvasHeight,
+          this.canvasX,
+          this.canvasY,
+          this.player,
+          this.p5,
+        );
+
+        const posCurrentBall = currentBall.getPositionVector();
+        let speedCurrentBall = currentBall.getSpeedVector();
+        speedCurrentBall.x *= -1;
+
+        newBall1.setPositionVector(posCurrentBall);
+        newBall1.setSpeedVector(speedCurrentBall);
+
+        this.loadCollisions({
+          player: newBall1,
+          colliders: [
+            ...currentBall.getCollisionObjects()
+          ],
+        });
+
+        this.balls.push(newBall1);
+      }
     }
+  }
+
+  handleMultipleBalls() {
+    this.balls = this.balls.filter(b => !b.isBelowScreen());
+    this.p5.text(`Balls: ${this.balls.length}`, 100, 350);
   }
 
   handleKeyReleased() {
@@ -179,11 +218,11 @@ export class GameScreen {
 
       this.blocks = blocks;
       this.player = player;
-      this.ball = ball;
+      this.balls = [ball];
 
       this.increaseGameSpeed({
         player: this.player,
-        ball: this.ball,
+        ball: this.balls,
         pSpeed: CONSTANTS.PLAYER_SPEED_INCREASE,
         bSpeed: CONSTANTS.BALL_SPEED_INCREASE,
       });
@@ -341,7 +380,7 @@ export class GameScreen {
 
   increaseGameSpeed({ player, ball, pSpeed, bSpeed }) {
     player.increaseSpeed(pSpeed);
-    ball.increaseSpeed(bSpeed);
+    ball.forEach(ball => ball.increaseSpeed(bSpeed));
   }
 
 }
