@@ -1,10 +1,11 @@
 import { CONSTANTS, LEVELS, BLOCK_TYPES, CANVAS_SETTINGS } from '../constants/constants.js';
-import { calculateCoordsToCenterItem } from '../utils/utils.js';
+import { calculateCoordsToCenterItem, getRandomNum } from '../utils/utils.js';
 import { ScoreManager } from './ScoreManager.js';
 import { Block } from './Block.js';
 import { Player } from './Player.js';
 import { Ball } from './Ball.js';
 import { Collisionable } from './Collisionable.js';
+import { PowerUp } from './PowerUp.js';
 
 export class GameScreen {
   
@@ -50,6 +51,11 @@ export class GameScreen {
     this.isOnMenu = true;
     this.isGameNotStarted = true;
 
+    /**
+     * DEBUG POWER UPS
+     */
+    this.powerUps = [];
+
     this.playBtn = null;
     this.generateMenu();
   }
@@ -78,12 +84,23 @@ export class GameScreen {
   
     this.player.draw();
     this.balls.forEach(ball => ball.draw());
+    // DEBUG POWER UPS
+    this.powerUps.forEach(p => p.draw());
     
     this.drawBlocks();
     this.scoreManager.draw();
     this.handleMultipleBalls();
+    // DEBUG - POWER UPS
+    this.handlePowerUps();
   
     this.handleEndGame();
+  }
+
+  /**
+   * DEBUG POWER UPS
+   */
+  handlePowerUps() {
+    this.powerUps = this.powerUps.filter(p => !p.isBelowScreen());
   }
 
   generateMenu() {
@@ -319,6 +336,11 @@ export class GameScreen {
 
     blocks.forEach(block => block.addObserver(this.scoreManager));
 
+    /**
+     * DEBUG - POWER UPS
+     */
+    blocks.forEach(block => block.addObserver(this));
+
     return {
       blocks,
       player: newPlayer,
@@ -381,6 +403,25 @@ export class GameScreen {
   increaseGameSpeed({ player, ball, pSpeed, bSpeed }) {
     player.increaseSpeed(pSpeed);
     ball.forEach(ball => ball.increaseSpeed(bSpeed));
+  }
+
+  update({ x, y, width, height }) {
+    /**
+     * DEBUG POWER UPS
+     */
+    const num = getRandomNum(1, 4);
+    if (num === 2) {
+      const p5 = this.p5;
+      const canvasHeight = this.canvasHeight;
+      console.log('Se genero un power up');
+      const powerUp = new PowerUp({
+        x,
+        y,
+        p5,
+        canvasHeight,
+      });
+      this.powerUps.push(powerUp);
+    }
   }
 
 }

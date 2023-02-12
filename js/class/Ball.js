@@ -41,6 +41,8 @@ export class Ball {
     this.vel = p5.createVector(this.speed, -this.speed);
 
     this.isFollowingPlayer = false;
+
+    this.type = 'Ball';
   }
 
   draw() {
@@ -143,7 +145,7 @@ export class Ball {
         const { x, y } = obj.getCoords();
         const { width, height } = obj.getData();
         if (this.iAmColliding({ x, y, width, height })) {
-          obj.onCollision();
+          obj.onCollision({ type: this.type });
           this.onCollision({ ...obj, x, y });
           return;
         }
@@ -252,6 +254,7 @@ export class Ball {
   }
 
   stopFollowPlayer() {
+    if (!this.isFollowingPlayer) return;
     this.isFollowingPlayer = false;
     const { movementDirection } = this.playerReference.getCompleteData();
     if (movementDirection < 0) {

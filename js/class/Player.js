@@ -85,8 +85,8 @@ export class Player {
     return isInsideScreen;
   }
 
-  onCollision() {
-    console.log('Player collided with something');
+  onCollision({ type = 'Unknown' }) {
+    console.log(`Player collided with ${type}`);
   }
 
   isActive() {

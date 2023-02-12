@@ -9,8 +9,8 @@ export class Collisionable {
     this.type = type;
   }
 
-  onCollision() {
-    console.log('Collided');
+  onCollision({ type = 'Unknown' }) {
+    console.log(`${this.type} collided with ${type}`);
   }
 
   isActive() {
