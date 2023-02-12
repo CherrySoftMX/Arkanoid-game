@@ -208,6 +208,7 @@ class GameScreen {
     if (this.ball.isBelowScreen()) {
       this.displayCenteredText('GAME OVER');
       this.scoreManager.saveHighestScore(this.scoreManager.getScore());
+      this.scoreManager.score = 0;
     } else if (this.isLevelCleared()) {
       this.ball.destroy();
       this.startNextLevelLoad();
