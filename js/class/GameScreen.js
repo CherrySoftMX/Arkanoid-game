@@ -421,14 +421,50 @@ export class GameScreen {
         y,
         p5,
         canvasHeight,
+        type: 'PowerUp - Multiple',
+        callBack: this.powerUpMultipleBalls.bind(this, 2),
       });
       powerUp.addCollisionObject(this.player);
       powerUp.addObserver(this);
 
       this.powerUps.push(powerUp);
-    } else if (type === 'PowerUp') {
+    } else if (type.includes('PowerUp')) {
       console.log('Me notifico un PowerUp');
       this.powerUps = this.powerUps.filter(p => p.isActive());
+    }
+  }
+
+  /******************************************************
+   *  POWER-UPS HANDLERS
+   ******************************************************/
+  powerUpMultipleBalls(num = 1) {
+    for (let i = 0; i < num; i++) {
+      const currentBall = this.balls[0];
+
+      const newBall = new Ball(
+        this.canvasWidth,
+        this.canvasHeight,
+        this.canvasX,
+        this.canvasY,
+        this.player,
+        this.p5,
+      );
+  
+      const posCurrentBall = currentBall.getPositionVector();
+      let speedCurrentBall = currentBall.getSpeedVector();
+      speedCurrentBall.x *= -1;
+  
+      newBall.setPositionVector(posCurrentBall);
+      newBall.setSpeedVector(speedCurrentBall);
+  
+      this.loadCollisions({
+        player: newBall,
+        colliders: [
+          ...currentBall.getCollisionObjects()
+        ],
+      });
+  
+      this.balls.push(newBall);
     }
   }
 

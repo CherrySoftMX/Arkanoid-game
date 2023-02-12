@@ -11,6 +11,7 @@ export class PowerUp extends Collisionable {
     p5,
     type = 'PowerUp',
     canvasHeight,
+    callBack = () => console.warn('Default PowerUp activated'),
    }) {
     super({ width, height, x, y, type });
     this.speed = 3;
@@ -30,6 +31,8 @@ export class PowerUp extends Collisionable {
     this.container = {
       height: canvasHeight,
     };
+
+    this.callBack = callBack;
   }
 
   draw() {
@@ -82,6 +85,7 @@ export class PowerUp extends Collisionable {
 
     if (type === 'Player') {
       this.destroy();
+      this.callBack();
       this.notifyAll();
     }
   }
