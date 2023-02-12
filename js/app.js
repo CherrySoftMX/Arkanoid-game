@@ -4,6 +4,9 @@ const CANVAS_SETTINGS = {
   SCORE_DISPLAY_HEIGHT: 0.07,
   ASPECT_RATIO_H: 11,
   ASPECT_RATIO_V: 16,
+  BTN_WIDTH: 0.3,
+  BTN_ASPECT_RATIO_V: 6,
+  BTN_ASPECT_RATIO_H: 16,
 };
 
 const CONSTANTS = {
@@ -142,11 +145,32 @@ class GameScreen {
     this.ball = ball;
 
     this.isLoadingNextLevel = false;
+    this.isOnMenu = true;
+
+    this.playBtn = null;
+    this.generateMenu();
   }
 
   draw() {
-    background(0, 0, 0);
+    if (this.isOnMenu) {
+      this.drawMenu();
+    } else {
+      this.drawGameplay();
+    }
+  }
 
+  drawMenu() {
+    push();
+    background(0, 0, 0);
+    fill(254, 254, 254);
+    textAlign(CENTER, CENTER);
+    textSize(this.canvasWidth * 0.07);
+    text('ARKANOID ATTEMPT', this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
+    pop();
+  }
+
+  drawGameplay() {
+    background(0, 0, 0);
     fill(255);
   
     this.player.draw();
@@ -156,6 +180,28 @@ class GameScreen {
   
     this.handleKeyPressed();
     this.handleEndGame();
+  }
+
+  generateMenu() {
+    const btnWidth = this.canvasWidth * CANVAS_SETTINGS.BTN_WIDTH;
+    const btnHeight = (btnWidth * CANVAS_SETTINGS.BTN_ASPECT_RATIO_V) / CANVAS_SETTINGS.BTN_ASPECT_RATIO_H;
+  
+    const { x, y } = calculateCoordsToCenterItem({
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+      objectHeight: btnHeight,
+      objectWidth: btnWidth,
+    });
+
+    this.playBtn = createButton('Play');
+    this.playBtn.position(x, y + btnHeight);
+    this.playBtn.size(btnWidth, btnHeight);
+    this.playBtn.mouseClicked(this.onBtnPlayClick.bind(this));
+  }
+
+  onBtnPlayClick() {
+    this.isOnMenu = false;
+    this.playBtn.remove();
   }
 
   handleEndGame() {
