@@ -53,7 +53,7 @@ const LEVELS = [
     ['-', '*', '-', '*', '-'],
   ],
   [
-    ['-', '*',, '#', '*', '-'],
+    ['-', '*', '#', '*', '-'],
     ['_', '-', '_', '-', '_'],
     ['#', '_', '_', '_', '#'],
     ['-', '_', '-', '_', '-'],
@@ -236,7 +236,6 @@ class GameScreen {
     let blockX = blocksMargin;
     // Los bloques comienzan a dibujarse en el area de juego
     let blockY = blocksMargin + this.CANVAS_GAME_AREA_Y;
-    console.log(structure.length);
     for (let i = 0; i < structure.length; i++) {
       levelRow = structure[i];
       blockX = blocksMargin;
