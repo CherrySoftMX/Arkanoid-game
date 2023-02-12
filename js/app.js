@@ -10,7 +10,26 @@ const CANVAS_SETTINGS = {
 const CONSTANTS = {
   PLAYER_SPEED: 3,
   BALL_SPEED: 4,
+  INITIAL_LEVEL: 0,
 };
+
+const LEVELS = [
+  [
+    ['_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_'],
+  ],
+  [
+    ['*', '_', '_', '_', '*'],
+    ['_', '_', '*', '_', '_'],
+    ['_', '*', '_', '*', '_'],
+    ['_', '_', '*', '_', '_'],
+    ['*', '_', '_', '_', '*'],
+    ['_', '*', '_', '*', '_'],
+  ],
+];
 
 let game;
 
@@ -57,7 +76,7 @@ class GameScreen {
   constructor(options) {
     this.canvasHeight = window.innerHeight * options.PREFERED_HEIGHT;
     this.canvasWidth = (this.canvasHeight * options.ASPECT_RATIO_H) / options.ASPECT_RATIO_V;
-    
+
     this.canvas = createCanvas(this.canvasWidth, this.canvasHeight);
 
     const { x, y } = calculateCoordsToCenterItem({
@@ -66,13 +85,22 @@ class GameScreen {
       objectHeight: this.canvasHeight,
       objectWidth: this.canvasWidth,
     });
+
+    this.canvasX = x;
+    this.canvasY = y;
   
     this.canvas.position(x, y);
 
+    this.currentLevel = CONSTANTS.INITIAL_LEVEL;
+
+    /*
     this.player = new Player(this.canvasWidth, this.canvasHeight, x, y);
     this.ball = new Ball(this.canvasWidth, this.canvasHeight, x, y, this.player);
-
-    this.blocks = this.generateBlocks({ options, canvasWidth: this.canvasWidth });
+  
+    this.blocks = this.generateLevel({
+      structure: LEVELS[this.currentLevel],
+      canvasWidth: this.canvasWidth,
+    });
 
     // Colisiones de la bola
     this.ball.addCollisionObject(this.player);
@@ -102,7 +130,17 @@ class GameScreen {
 
     this.ball.addCollisionObject(leftBorder);
     this.ball.addCollisionObject(rightBorder);
-    this.ball.addCollisionObject(topBorder);
+    this.ball.addCollisionObject(topBorder);*/
+
+    const {
+      blocks,
+      player,
+      ball,
+    } = this.loadLevel({ levels: LEVELS, levelNum: this.currentLevel });
+
+    this.blocks = blocks;
+    this.player = player;
+    this.ball = ball;
   }
 
   draw() {
@@ -164,6 +202,118 @@ class GameScreen {
       blockY += blocksHeight + blocksMargin;
     }
     return blocks;
+  }
+
+  /**
+   * Funcion para generar los niveles
+   * @param structure - Es un array de arrays donde '_' representa
+   * un bloque y '*' representa un espacio vacio.
+   * @beta
+   */
+  generateLevel({ structure, canvasWidth }) {
+    const blocks = [];
+    const blocksHeight = 30;
+    const blocksMargin = 0;
+
+    let levelRow = structure[0];
+    let blockX = blocksMargin;
+    let blockY = blocksMargin;
+    console.log(structure.length);
+    for (let i = 0; i < structure.length; i++) {
+      levelRow = structure[i];
+      blockX = blocksMargin;
+      const blocksWidth = canvasWidth / levelRow.length;
+      for (let j = 0; j < levelRow.length; j++) {
+        const newBlock = new Block(blocksWidth, blocksHeight, blockX, blockY);
+        if (levelRow[j] === '*') {
+          newBlock.destroy();
+        }
+        blocks.push(newBlock);
+        blockX += blocksWidth + blocksMargin;
+      }
+      blockY += blocksHeight + blocksMargin;
+    }
+    console.log(blocks);
+    return blocks;
+  }
+
+  loadLevel({ levels = [], levelNum = CONSTANTS.INITIAL_LEVEL }) {
+    const blocks = this.generateLevel({
+      structure: levels[levelNum],
+      canvasWidth: this.canvasWidth,
+    });
+
+    const newPlayer = new Player(
+      this.canvasWidth,
+      this.canvasHeight,
+      this.canvasX,
+      this.canvasY,
+    );
+
+    const newBall = new Ball(
+      this.canvasWidth,
+      this.canvasHeight,
+      this.canvasX, this.canvasY,
+      newPlayer,
+    );
+
+    const {
+      leftBorder,
+      rightBorder,
+      topBorder,
+    } = this.generateScreenBorderCollisions();
+    
+    this.loadCollisions({
+      player: newBall,
+      colliders: [
+        ...blocks,
+        newPlayer,
+        leftBorder,
+        rightBorder,
+        topBorder,
+      ],
+    });
+
+    return {
+      blocks,
+      player: newPlayer,
+      ball: newBall,
+    };
+  }
+
+  loadCollisions({ player, colliders }) {
+    colliders.forEach(coll => player.addCollisionObject(coll));
+    return player;
+  }
+
+  generateScreenBorderCollisions() {
+    // Bordes de la pantalla
+    const leftBorder = new Collisionable({
+      width: 10,
+      height: this.canvasHeight,
+      x: -10,
+      y: 0,
+    });
+
+    const rightBorder = new Collisionable({
+      width: 50,
+      height: this.canvasHeight,
+      x: this.canvasWidth,
+      y: 0,
+    });
+
+    const topBorder = new Collisionable({
+      width: this.canvasWidth,
+      height: 10,
+      x: 0,
+      y: -10
+    });
+
+    return {
+      leftBorder,
+      rightBorder,
+      topBorder,
+    };
   }
 
   drawBlocks() {
