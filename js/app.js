@@ -1,7 +1,7 @@
 const CANVAS_SETTINGS = {
 // Size in percentaje (1 = 100%)
   PREFERED_HEIGHT: 0.9,
-  ASPECT_RATIO_H: 9,
+  ASPECT_RATIO_H: 10,
   ASPECT_RATIO_V: 16,
   NUM_BLOCKS_H: 5,
   NUM_BLOCKS_V: 5,
@@ -17,9 +17,9 @@ const LEVELS = [
   [
     ['_', '_', '_', '_', '_'],
     ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
+    //['_', '_', '_', '_', '_'],
+    //['_', '_', '_', '_', '_'],
+    //['_', '_', '_', '_', '_'],
   ],
   [
     ['*', '_', '_', '_', '*'],
@@ -27,6 +27,13 @@ const LEVELS = [
     ['_', '*', '_', '*', '_'],
     ['_', '_', '*', '_', '_'],
     ['*', '_', '_', '_', '*'],
+    ['_', '*', '_', '*', '_'],
+  ],
+  [
+    ['_', '*', '*', '_'],
+    ['_', '_'],
+    ['*', '_', '_', '*'],
+    ['_', '_', '_', '_'],
     ['_', '*', '_', '*', '_'],
   ],
 ];
@@ -93,45 +100,7 @@ class GameScreen {
 
     this.currentLevel = CONSTANTS.INITIAL_LEVEL;
 
-    /*
-    this.player = new Player(this.canvasWidth, this.canvasHeight, x, y);
-    this.ball = new Ball(this.canvasWidth, this.canvasHeight, x, y, this.player);
-  
-    this.blocks = this.generateLevel({
-      structure: LEVELS[this.currentLevel],
-      canvasWidth: this.canvasWidth,
-    });
-
-    // Colisiones de la bola
-    this.ball.addCollisionObject(this.player);
-    this.blocks.forEach(block => this.ball.addCollisionObject(block));
-
-    // Bordes de la pantalla
-    const leftBorder = new Collisionable({
-      width: 10,
-      height: this.canvasHeight,
-      x: -10,
-      y: 0,
-    });
-
-    const rightBorder = new Collisionable({
-      width: 50,
-      height: this.canvasHeight,
-      x: this.canvasWidth,
-      y: 0,
-    });
-
-    const topBorder = new Collisionable({
-      width: this.canvasWidth,
-      height: 10,
-      x: 0,
-      y: -10
-    });
-
-    this.ball.addCollisionObject(leftBorder);
-    this.ball.addCollisionObject(rightBorder);
-    this.ball.addCollisionObject(topBorder);*/
-
+    // Generate game objects
     const {
       blocks,
       player,
@@ -141,6 +110,8 @@ class GameScreen {
     this.blocks = blocks;
     this.player = player;
     this.ball = ball;
+
+    this.isLoadingNextLevel = false;
   }
 
   draw() {
@@ -158,20 +129,10 @@ class GameScreen {
 
   handleEndGame() {
     if (this.ball.isBelowScreen()) {
-      push();
-      textAlign(CENTER, CENTER);
-      textSize(20);
-      fill(255);
-      text('GAME OVER', this.canvasWidth / 2, this.canvasHeight / 2);
-      pop();
-    } else if (this.blocks.filter(b => b.isActive()).length === 0) {
-      push();
+      this.displayCenteredText('GAME OVER');
+    } else if (this.isLevelCleared()) {
       this.ball.destroy();
-      textAlign(CENTER, CENTER);
-      textSize(20);
-      fill(255);
-      text('YOU WIN!', this.canvasWidth / 2, this.canvasHeight / 2);
-      pop();
+      this.startNextLevelLoad();
     }
   }
 
@@ -181,27 +142,52 @@ class GameScreen {
     }
   }
 
-  generateBlocks({ options, canvasWidth }) {
-    const blocks = [];
-    const numOfBlocksHorizontal = options.NUM_BLOCKS_H;
-    const numOfBlocksVertical = options.NUM_BLOCKS_V;
-    const blocksMargin = 0;
-    const blocksWidth = canvasWidth / numOfBlocksHorizontal;
-    const blocksHeight = 30;
+  displayCenteredText(message = 'Debug message') {
+    push();
+    textAlign(CENTER, CENTER);
+    textSize(20);
+    fill(255);
+    text(message, this.canvasWidth / 2, this.canvasHeight / 2);
+    pop();
+  }
 
-    let blockX = blocksMargin;
-    let blockY = blocksMargin;
-    for (let i = 0; i < numOfBlocksVertical; i++) {
-      blockX = blocksMargin;
-      for (let j = 0; j < numOfBlocksHorizontal; j++) {
-        blocks.push(
-          new Block(blocksWidth, blocksHeight, blockX, blockY),
-        );
-        blockX += blocksWidth + blocksMargin;
-      }
-      blockY += blocksHeight + blocksMargin;
+  isLevelCleared() {
+    return this.blocks.filter(b => b.isActive()).length === 0;
+  }
+
+  startNextLevelLoad() {
+    if (this.currentLevel >= LEVELS.length) {
+      this.displayCenteredText('¡GAME CLEARED!');
+      return;
     }
-    return blocks;
+    if (this.isLoadingNextLevel) {
+      // Los niveles empiezan en cero pero por presentación se muestra
+      // que pasaste el nivel actual + 1.
+      this.displayCenteredText(`LEVEL ${this.currentLevel} CLEARED!`);
+      return;
+    }
+    if (this.currentLevel < LEVELS.length) {
+      this.currentLevel += 1;
+    }
+
+    this.isLoadingNextLevel = true;
+
+    setTimeout(() => {
+      const {
+        blocks,
+        player,
+        ball,
+      } = this.loadLevel({
+        levels: LEVELS,
+        levelNum: this.currentLevel,
+      });
+
+      this.blocks = blocks;
+      this.player = player;
+      this.ball = ball;
+
+      this.isLoadingNextLevel = false;
+    }, 3500);
   }
 
   /**
@@ -222,6 +208,8 @@ class GameScreen {
     for (let i = 0; i < structure.length; i++) {
       levelRow = structure[i];
       blockX = blocksMargin;
+      // El ancho de los bloques puede variar de acuerdo al número
+      // de bloques en la fila
       const blocksWidth = canvasWidth / levelRow.length;
       for (let j = 0; j < levelRow.length; j++) {
         const newBlock = new Block(blocksWidth, blocksHeight, blockX, blockY);
@@ -253,7 +241,8 @@ class GameScreen {
     const newBall = new Ball(
       this.canvasWidth,
       this.canvasHeight,
-      this.canvasX, this.canvasY,
+      this.canvasX,
+      this.canvasY,
       newPlayer,
     );
 
@@ -317,9 +306,13 @@ class GameScreen {
   }
 
   drawBlocks() {
-    this.blocks.forEach(block => {
-     block.draw(); 
-    });
+    if (this.blocks.length > 0 && !this.isLevelCleared()) {
+      push();
+      this.blocks.forEach(block => {
+        block.draw(); 
+       });
+      pop();
+    }
   }
 
 }
@@ -580,7 +573,9 @@ class Block {
 
   draw() {
     if (this.isDestroyed) return;
-    fill(255, 85, 49);
+    //fill(255, 85, 49);
+    fill(94, 92, 92);
+    stroke(254, 254, 254);
     strokeWeight(1);
     rect(this.x, this.y, this.width, this.height);
   }
