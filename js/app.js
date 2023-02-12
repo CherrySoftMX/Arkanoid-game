@@ -10,7 +10,7 @@ const CANVAS_SETTINGS = {
 };
 
 const CONSTANTS = {
-  PLAYER_SPEED: 3,
+  PLAYER_SPEED: 4,
   BALL_SPEED: 4,
   INITIAL_LEVEL: 0,
   PLAYER_SPEED_INCREASE: 0.25,
@@ -391,6 +391,7 @@ class GameScreen {
       height: this.canvasHeight,
       x: -10,
       y: 0,
+      type: 'LeftBorder',
     });
 
     const rightBorder = new Collisionable({
@@ -398,6 +399,7 @@ class GameScreen {
       height: this.canvasHeight,
       x: this.canvasWidth,
       y: 0,
+      type: 'RightBorder',
     });
 
     const topBorder = new Collisionable({
@@ -405,6 +407,7 @@ class GameScreen {
       height: 10,
       x: 0,
       y: -10 + this.CANVAS_GAME_AREA_Y,
+      type: 'TopBorder',
     });
 
     return {
@@ -523,6 +526,8 @@ class Player {
     this.speed = CONSTANTS.PLAYER_SPEED;
 
     this.isDestroyed = false;
+
+    this.type = 'Player';
   }
 
   draw() {
@@ -634,18 +639,30 @@ class Ball {
     this.collisionObjects = [];
 
     this.isDestroyed = false;
+
+    /**
+    * REFACTOR CON VECTORES
+    */
+    this.pos = createVector(x, y);
+    this.vel = createVector(this.speed, -this.speed);
   }
 
   draw() {
     fill(255);
     this.update();
-    ellipse(this.x, this.y, this.width, this.height);
+    //ellipse(this.x, this.y, this.width, this.height);
+    /**
+     * Refactor con vectores
+     */
+    ellipse(this.pos.x, this.pos.y, this.width, this.height);
   }
 
   update() {
     if (this.isBelowScreen()) return;
     if (!this.isActive()) return;
+    this.pos.add(this.vel);
     this.detectCollisions();
+    return;
     if (this.angle === 45) {
       this.x = this.x + this.speed;
       this.y = this.y + this.speed;
@@ -705,7 +722,7 @@ class Ball {
         const { width, height } = obj.getData();
         if (this.iAmColliding({ x, y, width, height })) {
           obj.onCollision();
-          this.onCollision();
+          this.onCollision(obj);
           return;
         }
       }
@@ -727,21 +744,63 @@ class Ball {
    * @returns - Un booleano que indica si el objeto (this) esta colisionando con el objeto de los parametros.
    */
   iAmColliding({ x, y, width, height }) {
-    const verticalDistance = Math.floor((y + (height / 2)) - this.y );
+    const myX = this.pos.x;
+    const myY = this.pos.y;
+
+    const verticalDistance = Math.floor((y + (height / 2)) - myY );
     // Valor absoluto de la distancia vertical
     const fixedVerticalDistance = verticalDistance < 0 ? verticalDistance * (-1) : verticalDistance;
     const isVerticalCollision = fixedVerticalDistance < ((this.height / 2) + (height / 2));
-    const isHorizontalCollision = this.x + (this.width / 2) >= x && (this.x - this.width / 2) <= (x + width);
+    const isHorizontalCollision = myX + (this.width / 2) >= x && (myX - this.width / 2) <= (x + width);
 
     const isCollision = isVerticalCollision && isHorizontalCollision;
     return isCollision;
   }
 
-  onCollision() {
-    this.angle += 90;
+  onCollision({ type, x, y, width, height }) {
+    /*this.angle += 90;
     if (this.angle > 360) {
       this.angle = 45;
     }
+    console.log('Colision');*/
+  
+    /**
+     * Refactor con vectores
+    */
+    //this.vel.x *= -1;
+    const prevVel = this.vel.copy();
+
+    switch (type) {
+      case 'Block':
+        //this.vel.x *= -1;
+        this.vel.y *= -1;        
+        break;
+      case 'TopBorder':
+        this.vel.y *= -1;
+        break;
+      case 'LeftBorder':
+        this.vel.x *= -1;
+        break;
+      case 'RightBorder':
+        this.vel.x *= -1;
+        break;
+      case 'Player':
+        const relativeX = map(this.pos.x, x, x + width, 0, 40);
+        let newXDirection = 0;
+        if (relativeX < 10) {
+          newXDirection = -1;
+        } else if (relativeX < 20) {
+          newXDirection = -0.5;
+        } else if (relativeX < 30) {
+          newXDirection = 0.5;
+        } else {
+          newXDirection = 1;
+        }
+        this.vel.set(newXDirection * this.speed, -this.speed);
+        break;
+    }
+
+    this.pos.sub(prevVel);
   }
 
   setPlayerReference(player) {
@@ -776,6 +835,8 @@ class Block {
 
     this.durability = durability;
     this.blockType = blockType;
+
+    this.type = 'Block';
   }
 
   draw() {
@@ -833,19 +894,24 @@ class Block {
     this.observers.forEach(obj => obj.update(blockData));
   }
 
+  getType() {
+    return this.type;
+  }
+
 }
 
 /**
  * Generic class for collisionable
  */
 class Collisionable {
-  constructor({ width, height, x, y }) {
+  constructor({ width, height, x, y, type = 'Generic' }) {
     this.width = width;
     this.height = height;
     this.x = x;
     this.y = y;
 
     this.isDestroyed = false;
+    this.type = type;
   }
 
   onCollision() {
@@ -868,5 +934,9 @@ class Collisionable {
       width: this.width,
       height: this.height,
     };
+  }
+
+  getType() {
+    return this.type;
   }
 }
