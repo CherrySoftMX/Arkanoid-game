@@ -1,5 +1,5 @@
 const CANVAS_SETTINGS = {
-// Size in percentaje (1 = 100%)
+// Tamaño en porcentaje (1 = 100%)
   PREFERED_HEIGHT: 0.9,
   ASPECT_RATIO_H: 10,
   ASPECT_RATIO_V: 16,
@@ -100,6 +100,8 @@ class GameScreen {
 
     this.currentLevel = CONSTANTS.INITIAL_LEVEL;
 
+    this.scoreManager = new ScoreManager(this.canvasWidth, this.canvasHeight);
+
     // Generate game objects
     const {
       blocks,
@@ -122,6 +124,7 @@ class GameScreen {
     this.player.draw();
     this.ball.draw();
     this.drawBlocks();
+    this.scoreManager.draw();
   
     this.handleKeyPressed();
     this.handleEndGame();
@@ -263,6 +266,8 @@ class GameScreen {
       ],
     });
 
+    blocks.forEach(block => block.addObserver(this.scoreManager));
+
     return {
       blocks,
       player: newPlayer,
@@ -276,7 +281,11 @@ class GameScreen {
   }
 
   generateScreenBorderCollisions() {
-    // Bordes de la pantalla
+    /* Se crean objetos colisionables que delimitan
+       los bordes de la pantalla para que la pelota
+       no se salga de los limites.
+       Tienen un tamaño de 10 pixeles para evitar
+       problemas al calcular las colisiones */
     const leftBorder = new Collisionable({
       width: 10,
       height: this.canvasHeight,
@@ -285,7 +294,7 @@ class GameScreen {
     });
 
     const rightBorder = new Collisionable({
-      width: 50,
+      width: 10,
       height: this.canvasHeight,
       x: this.canvasWidth,
       y: 0,
@@ -313,6 +322,37 @@ class GameScreen {
        });
       pop();
     }
+  }
+
+}
+
+/**
+ * Score manager class
+ */
+class ScoreManager {
+  constructor(canvasWidth, canvasHeight) {
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
+
+    this.score = 0;
+  }
+
+  addToScore(num) {
+    this.score += num;
+  }
+
+  getScore() {
+    return this.score;
+  }
+
+  draw() {
+    fill(255);
+    textSize(14);
+    text('Score: ' + this.getScore(), 10, this.canvasHeight - 100);
+  }
+
+  update({ scoreValue }) {
+    this.addToScore(scoreValue);
   }
 
 }
@@ -576,13 +616,16 @@ class Ball {
  */
 class Block {
 
-  constructor(width, height, x, y) {
+  constructor(width, height, x, y, score = 100) {
     this.width = width;
     this.height = height;
     this.x = x;
     this.y = y;
+    this.scoreValue = score;
 
     this.isDestroyed = false;
+
+    this.observers = [];
   }
 
   draw() {
@@ -596,6 +639,7 @@ class Block {
 
   onCollision() {
     this.destroy();
+    this.notifyAll();
   }
 
   destroy() {
@@ -618,6 +662,22 @@ class Block {
       width: this.width,
       height: this.height,
     };
+  }
+
+  getCompleteData() {
+    const { x, y } = this.getCoords();
+    const { width, height } = this.getData();
+    const scoreValue = this.scoreValue;
+    return { x, y, width, height, scoreValue };
+  }
+
+  addObserver(obj) {
+    this.observers.push(obj);
+  }
+
+  notifyAll() {
+    const blockData = this.getCompleteData();
+    this.observers.forEach(obj => obj.update(blockData));
   }
 
 }
