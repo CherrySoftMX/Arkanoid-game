@@ -777,16 +777,19 @@ class Ball {
 
         const relativeX = map(this.pos.x, x, x + width, 0, 40);
         let newXDirection = 0;
+        let ySpeed = -this.speed;
         if (relativeX < 10) {
           newXDirection = -1;
         } else if (relativeX < 20) {
           newXDirection = -0.5;
+          ySpeed = this.speed * 1.4 * (-1);
         } else if (relativeX < 30) {
           newXDirection = 0.5;
+          ySpeed = this.speed * 1.4 * (-1);
         } else {
           newXDirection = 1;
         }
-        this.vel.set(newXDirection * this.speed, -this.speed);
+        this.vel.set(newXDirection * this.speed, ySpeed);
         break;
     }
 
