@@ -7,6 +7,8 @@ export class Collisionable {
 
     this.isDestroyed = false;
     this.type = type;
+
+    this.isCollisionActive = true;
   }
 
   onCollision({ type = 'Unknown' }) {
@@ -41,5 +43,13 @@ export class Collisionable {
 
   isActive() {
     return !this.isDestroyed;
+  }
+
+  disableCollisions() {
+    this.isCollisionActive = false;
+  }
+
+  isCollisionable() {
+    return this.isCollisionActive;
   }
 }

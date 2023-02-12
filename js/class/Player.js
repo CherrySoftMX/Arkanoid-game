@@ -38,6 +38,8 @@ export class Player {
     // 0 -> Quieto
     // 1 -> Derecha
     this.movementDirection = 0;
+
+    this.isCollisionActive = true;
   }
 
   draw() {
@@ -127,6 +129,14 @@ export class Player {
 
   increaseSpeed(increase) {
     this.speed += increase;
+  }
+
+  disableCollisions() {
+    this.isCollisionActive = false;
+  }
+
+  isCollisionable() {
+    return this.isCollisionActive;
   }
 
 }

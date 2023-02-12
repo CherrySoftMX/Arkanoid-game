@@ -21,6 +21,7 @@ export class Block {
     this.type = 'Block';
 
     this.isTransitioning = false;
+    this.isCollisionActive = true;
   }
 
   draw() {
@@ -39,8 +40,11 @@ export class Block {
 
     this.durability -= 1;
     this.isTransitioning = true;
-
     this.notifyAll();
+
+    if (this.durability === 0) {
+      this.disableCollisions();
+    }
 
     // Change block color for 30 milliseconds to provide visual feedback
     setTimeout(() => {
@@ -95,6 +99,18 @@ export class Block {
 
   getBlockType() {
     return this.blockType;
+  }
+
+  disableCollisions() {
+    this.isCollisionActive = false;
+  }
+
+  enableCollisions() {
+    this.isCollisionActive = true;
+  }
+
+  isCollisionable() {
+    return this.isCollisionActive;
   }
 
 }

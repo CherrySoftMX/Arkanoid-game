@@ -141,7 +141,7 @@ export class Ball {
 
   detectCollisions() {
     this.collisionObjects.forEach(obj => {
-      if (obj.isActive()) {
+      if (obj.isActive() && obj.isCollisionable()) {
         const { x, y } = obj.getCoords();
         const { width, height } = obj.getData();
         if (this.iAmColliding({ x, y, width, height })) {
@@ -226,17 +226,38 @@ export class Ball {
     const isTopSideHit = this.iAmColliding({ x, y, width, height: 1 });
     const isBottomSideHit = this.iAmColliding({ x, y: y + height, width, height: 1 });
 
-    if (isLeftSideHit || isRightSideHit) {
-      this.vel.x *= -1;
-      if (isBottomSideHit || isTopSideHit) {
-        this.vel.y *= -1;
-      }
-    } else if (isBottomSideHit || isTopSideHit) {
-      this.vel.y *= -1;
-      if (isLeftSideHit || isRightSideHit) {
+    const ballX = this.pos.x;
+    const ballY = this.pos.y;
+    const ballRightBorder = ballX + this.width / 2;
+    const ballLeftBorder = ballX - this.width / 2;
+
+    const collObjRightBorder = x + width;
+
+    const currentSpeedX = this.vel.x < 0 ? -this.vel.x : this.vel.x;
+
+    if (isLeftSideHit) {
+      //alert(`is Right: ${ballRightBorder}, x: ${x}`);
+      if (ballRightBorder - currentSpeedX <= x) {
         this.vel.x *= -1;
+        //alert('Collision izquierda');
+      } else if (isTopSideHit || isBottomSideHit) {
+        this.vel.y *= -1;
+        //alert('Falsa collision izquierda');
       }
+    } else if (isRightSideHit) {
+      //alert(`is Left: ${ballLeftBorder}, x: ${collObjRightBorder}`);
+      if (ballLeftBorder + currentSpeedX >= collObjRightBorder) {
+        this.vel.x *= -1;
+        //alert('Colision derecha');
+      } else if (isTopSideHit || isBottomSideHit) {
+        this.vel.y *= -1;
+        //alert('Falsa colision derecha');
+      }
+    } else if (isTopSideHit || isBottomSideHit) {
+      //alert('Colision vertical');
+      this.vel.y *= -1;
     }
+
   }
 
   handleFollowPlayer() {
