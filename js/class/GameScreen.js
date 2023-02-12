@@ -7,6 +7,7 @@ import { Player } from './Player.js';
 import { Ball } from './Ball.js';
 import { Collisionable } from './Collisionable.js';
 import { PowerUp } from './PowerUp.js';
+import { TEXT_LABELS } from '../constants/strings.js';
 
 export class GameScreen {
   
@@ -72,7 +73,7 @@ export class GameScreen {
     this.p5.fill(254, 254, 254);
     this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
     this.p5.textSize(this.canvasWidth * 0.07);
-    this.p5.text('ARKANOID ATTEMPT', this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
+    this.p5.text(TEXT_LABELS.GAME_TITLE, this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
     this.p5.pop();
   }
 
@@ -103,7 +104,7 @@ export class GameScreen {
       objectWidth: btnWidth,
     });
 
-    this.playBtn = this.p5.createButton('Play');
+    this.playBtn = this.p5.createButton(TEXT_LABELS.PLAY_BTN);
     this.playBtn.position(x, y + btnHeight);
     this.playBtn.size(btnWidth, btnHeight);
     this.playBtn.mouseClicked(this.onBtnPlayClick.bind(this));
@@ -118,7 +119,7 @@ export class GameScreen {
     const numOfBalls = this.balls.length;
     if (numOfBalls === 0) {
       if (this.lives < 1) {
-        this.displayCenteredText('GAME OVER');
+        this.displayCenteredText(TEXT_LABELS.GAME_OVER);
         this.scoreManager.saveHighestScore(this.scoreManager.getScore());
         this.scoreManager.score = 0;
       } else {
@@ -163,14 +164,14 @@ export class GameScreen {
   startNextLevelLoad({ resetCurrentLevel = false }) {
     const isGameFinished = this.currentLevel >= LEVELS.length;
     if (isGameFinished) {
-      this.displayCenteredText('¡GAME CLEARED!');
+      this.displayCenteredText(TEXT_LABELS.GAME_CLEARED);
       return;
     }
     if (this.isLoadingNextLevel && !resetCurrentLevel) {
-      this.displayCenteredText(`LEVEL ${this.currentLevel} CLEARED!`);
+      this.displayCenteredText(TEXT_LABELS.STAGE_CLEAR(this.currentLevel));
       return;
     } else if (this.isLoadingNextLevel && resetCurrentLevel) {
-      this.displayCenteredText(`LIVES LEFT: ${this.lives}`);
+      this.displayCenteredText(TEXT_LABELS.LIVE_LOST(this.lives));
       return;
     }
     if (!isGameFinished && !resetCurrentLevel) {
