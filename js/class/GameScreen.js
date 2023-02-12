@@ -48,6 +48,7 @@ export class GameScreen {
     this.balls = [ball];
 
     this.isLoadingNextLevel = false;
+    this.lives = CONSTANTS.PLAYER_INITIAL_LIVES;
     this.isOnMenu = true;
 
     this.powerUps = [];
@@ -115,13 +116,17 @@ export class GameScreen {
   handleEndGame() {
     const numOfBalls = this.balls.length;
     if (numOfBalls === 0) {
-      this.displayCenteredText('GAME OVER');
-      this.scoreManager.saveHighestScore(this.scoreManager.getScore());
-      this.scoreManager.score = 0;
+      if (this.lives < 1) {
+        this.displayCenteredText('GAME OVER');
+        this.scoreManager.saveHighestScore(this.scoreManager.getScore());
+        this.scoreManager.score = 0;
+      } else {
+        this.startNextLevelLoad({ resetCurrentLevel: true });
+      }
       this.powerUps.forEach(p => p.destroy());
     } else if (this.isLevelCleared()) {
       this.balls.forEach(ball => ball.destroy());
-      this.startNextLevelLoad();
+      this.startNextLevelLoad({ resetCurrentLevel: false });
     }
   }
 
@@ -154,31 +159,40 @@ export class GameScreen {
     return this.blocks.filter(b => b.isActive()).length === 0;
   }
 
-  startNextLevelLoad() {
+  startNextLevelLoad({ resetCurrentLevel = false }) {
     const isGameFinished = this.currentLevel >= LEVELS.length;
     if (isGameFinished) {
       this.displayCenteredText('¡GAME CLEARED!');
       return;
     }
-    if (this.isLoadingNextLevel) {
-      // Los niveles empiezan en cero pero por presentación se muestra
-      // que pasaste el nivel actual + 1.
+    if (this.isLoadingNextLevel && !resetCurrentLevel) {
       this.displayCenteredText(`LEVEL ${this.currentLevel} CLEARED!`);
       return;
+    } else if (this.isLoadingNextLevel && resetCurrentLevel) {
+      this.displayCenteredText(`LIVES LEFT: ${this.lives}`);
+      return;
     }
-    if (!isGameFinished) {
+    if (!isGameFinished && !resetCurrentLevel) {
       this.currentLevel += 1;
+    } else if (resetCurrentLevel) {
+      this.lives = this.lives > 1 ? this.lives - 1 : 0;
     }
 
     this.isLoadingNextLevel = true;
 
-    // Se repite el if del inicio para evitar escribir a local storage
-    // docenas de veces
+    // Avoid writing to local storage every frame after game finishes
     if (this.currentLevel >= LEVELS.length) {
       this.scoreManager.saveHighestScore(this.scoreManager.getScore());
     }
 
-    // Cargar el nuevo nivel despues de 3.5 segundos
+    // Reset the game if player loses all lives
+    if (this.lives < 1) {
+      this.currentLevel = CONSTANTS.INITIAL_LEVEL;
+      this.scoreManager.resetScore();
+      this.lives = CONSTANTS.PLAYER_INITIAL_LIVES;
+    }
+
+    // Load next level after 3.5 seconds
     setTimeout(() => {
       const {
         blocks,
@@ -193,12 +207,14 @@ export class GameScreen {
       this.player = player;
       this.balls = [ball];
 
-      this.increaseGameSpeed({
-        player: this.player,
-        ball: this.balls,
-        pSpeed: CONSTANTS.PLAYER_SPEED_INCREASE,
-        bSpeed: CONSTANTS.BALL_SPEED_INCREASE,
-      });
+      if (!resetCurrentLevel) {
+        this.increaseGameSpeed({
+          player: this.player,
+          ball: this.balls,
+          pSpeed: CONSTANTS.PLAYER_SPEED_INCREASE,
+          bSpeed: CONSTANTS.BALL_SPEED_INCREASE,
+        });
+      }
 
       this.isLoadingNextLevel = false;
     }, 3500);

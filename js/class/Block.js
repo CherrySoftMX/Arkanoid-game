@@ -78,4 +78,8 @@ export class Block {
     return this.type;
   }
 
+  getBlockType() {
+    return this.blockType;
+  }
+
 }
