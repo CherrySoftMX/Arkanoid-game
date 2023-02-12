@@ -530,6 +530,20 @@ class Ball {
     });
   }
 
+  /**
+   * Calcula si el objeto actual (this) se encuentra colisionando con otro objeto.
+   * 
+   * Este sistema de colisiones simple funciona al calcular si las coordenadas de (this)
+   * se encuentran dentro de las coordenadas del otro objeto.
+   * 
+   * El objeto a comprobar colision debe ser un rectangulo.
+   *
+   * @param x - La coordenada x del objeto a comprobar colision.
+   * @param y - La coordenada y del objeto a comprobar colision.
+   * @param width - El ancho del objeto a comprobar colision.
+   * @param height - El ancho del objeto a comprobar colision.  
+   * @returns - Un booleano que indica si el objeto (this) esta colisionando con el objeto de los parametros.
+   */
   iAmColliding({ x, y, width, height }) {
     const verticalDistance = Math.floor((y + (height / 2)) - this.y );
     const fixedVerticalDistance = verticalDistance < 0 ? verticalDistance * (-1) : verticalDistance;
