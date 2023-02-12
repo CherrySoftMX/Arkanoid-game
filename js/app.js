@@ -10,6 +10,8 @@ const CONSTANTS = {
   PLAYER_SPEED: 3,
   BALL_SPEED: 4,
   INITIAL_LEVEL: 0,
+  PLAYER_SPEED_INCREASE: 0.25,
+  BALL_SPEED_INCREASE: 0.8,
 };
 
 // Durabilidad negativa significa indestructible
@@ -53,7 +55,7 @@ const LEVELS = [
     ['-', '*', '-', '*', '-'],
   ],
   [
-    ['-', '*', '#', '*', '-'],
+    ['-', '*', '_', '*', '-'],
     ['_', '-', '_', '-', '_'],
     ['#', '_', '_', '_', '#'],
     ['-', '_', '-', '_', '-'],
@@ -159,6 +161,7 @@ class GameScreen {
   handleEndGame() {
     if (this.ball.isBelowScreen()) {
       this.displayCenteredText('GAME OVER');
+      this.scoreManager.saveHighestScore(this.scoreManager.getScore());
     } else if (this.isLevelCleared()) {
       this.ball.destroy();
       this.startNextLevelLoad();
@@ -202,6 +205,12 @@ class GameScreen {
 
     this.isLoadingNextLevel = true;
 
+    // Se repite el if del inicio para evitar escribir a local storage
+    // docenas de veces
+    if (this.currentLevel >= LEVELS.length) {
+      this.scoreManager.saveHighestScore(this.scoreManager.getScore());
+    }
+
     // Cargar el nuevo nivel despues de 3.5 segundos
     setTimeout(() => {
       const {
@@ -216,6 +225,13 @@ class GameScreen {
       this.blocks = blocks;
       this.player = player;
       this.ball = ball;
+
+      this.increaseGameSpeed({
+        player: this.player,
+        ball: this.ball,
+        pSpeed: CONSTANTS.PLAYER_SPEED_INCREASE,
+        bSpeed: CONSTANTS.BALL_SPEED_INCREASE,
+      });
 
       this.isLoadingNextLevel = false;
     }, 3500);
@@ -361,6 +377,11 @@ class GameScreen {
     }
   }
 
+  increaseGameSpeed({ player, ball, pSpeed, bSpeed }) {
+    player.increaseSpeed(pSpeed);
+    ball.increaseSpeed(bSpeed);
+  }
+
 }
 
 /**
@@ -373,6 +394,7 @@ class ScoreManager {
     this.scoreAreaHeight = scoreAreaHeight;
 
     this.score = 0;
+    this.highestScore = this.getHighestScore();
   }
 
   addToScore(num) {
@@ -389,12 +411,37 @@ class ScoreManager {
 
     fill(255);
     textSize(12);
-    textAlign(CENTER, CENTER);
-    text('Score: ' + this.getScore(), this.canvasWidth / 2, this.scoreAreaHeight / 2);
+    textAlign(LEFT, CENTER);
+    text(
+      'Score: ' + this.formatNumber(this.getScore(), 5),
+      20,
+      this.scoreAreaHeight / 2,
+    );
+    text(
+      'Highest Score: ' + this.formatNumber(this.highestScore, 5),
+      (this.canvasWidth / 2) + 20,
+      this.scoreAreaHeight / 2,
+    );
   }
 
   update({ scoreValue }) {
     this.addToScore(scoreValue);
+  }
+
+  saveHighestScore(score) {
+    localStorage.setItem('highest_score', score);
+  }
+
+  getHighestScore() {
+    const item = localStorage.getItem('highest_score');
+    if (item) {
+      return parseInt(item);
+    }
+    return 0;
+  }
+
+  formatNumber(num, spaces = 5) {
+    return String(num).padStart(spaces, '0');
   }
 
 }
@@ -492,6 +539,10 @@ class Player {
 
   getWidth() {
     return this.width;
+  }
+
+  increaseSpeed(increase) {
+    this.speed += increase;
   }
 
 }
@@ -628,6 +679,7 @@ class Ball {
    */
   iAmColliding({ x, y, width, height }) {
     const verticalDistance = Math.floor((y + (height / 2)) - this.y );
+    // Valor absoluto de la distancia vertical
     const fixedVerticalDistance = verticalDistance < 0 ? verticalDistance * (-1) : verticalDistance;
     const isVerticalCollision = fixedVerticalDistance < ((this.height / 2) + (height / 2));
     const isHorizontalCollision = this.x + (this.width / 2) >= x && (this.x - this.width / 2) <= (x + width);
@@ -649,6 +701,10 @@ class Ball {
 
   addCollisionObject(obj) {
     this.collisionObjects.push(obj);
+  }
+
+  increaseSpeed(increase) {
+    this.speed += increase;
   }
 
 }
