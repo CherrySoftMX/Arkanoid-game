@@ -49,11 +49,7 @@ export class GameScreen {
 
     this.isLoadingNextLevel = false;
     this.isOnMenu = true;
-    this.isGameNotStarted = true;
 
-    /**
-     * DEBUG POWER UPS
-     */
     this.powerUps = [];
 
     this.playBtn = null;
@@ -84,24 +80,14 @@ export class GameScreen {
   
     this.player.draw();
     this.balls.forEach(ball => ball.draw());
-    // DEBUG POWER UPS
     this.powerUps.forEach(p => p.draw());
     
     this.drawBlocks();
     this.scoreManager.draw();
     this.handleMultipleBalls();
-    // DEBUG - POWER UPS
     this.handlePowerUps();
   
     this.handleEndGame();
-  }
-
-  /**
-   * DEBUG POWER UPS
-   */
-  handlePowerUps() {
-    this.powerUps = this.powerUps.filter(p => !p.isBelowScreen());
-    this.p5.text(`Power ups: ${this.powerUps.length}`, 10, 365);
   }
 
   generateMenu() {
@@ -132,6 +118,7 @@ export class GameScreen {
       this.displayCenteredText('GAME OVER');
       this.scoreManager.saveHighestScore(this.scoreManager.getScore());
       this.scoreManager.score = 0;
+      this.powerUps.forEach(p => p.destroy());
     } else if (this.isLevelCleared()) {
       this.balls.forEach(ball => ball.destroy());
       this.startNextLevelLoad();
@@ -142,44 +129,12 @@ export class GameScreen {
     if (this.p5.keyIsPressed) {
       this.player.controlInputs(this.p5.keyCode);
       this.balls.forEach(ball => ball.handleKeyPressed(this.p5.keyCode));
-
-      /**
-       * DEBUG: ADD MORE BALLS (c)
-       */
-      if (this.p5.keyCode === 67) {
-        const currentBall = this.balls[0];
-
-        const newBall1 = new Ball(
-          this.canvasWidth,
-          this.canvasHeight,
-          this.canvasX,
-          this.canvasY,
-          this.player,
-          this.p5,
-        );
-
-        const posCurrentBall = currentBall.getPositionVector();
-        let speedCurrentBall = currentBall.getSpeedVector();
-        speedCurrentBall.x *= -1;
-
-        newBall1.setPositionVector(posCurrentBall);
-        newBall1.setSpeedVector(speedCurrentBall);
-
-        this.loadCollisions({
-          player: newBall1,
-          colliders: [
-            ...currentBall.getCollisionObjects()
-          ],
-        });
-
-        this.balls.push(newBall1);
-      }
     }
   }
 
   handleMultipleBalls() {
     this.balls = this.balls.filter(b => !b.isBelowScreen());
-    this.p5.text(`Balls: ${this.balls.length}`, 10, 350);
+    this.p5.text(`Balls: ${this.balls.length}`, 10, this.canvasHeight - 130);
   }
 
   handleKeyReleased() {
@@ -336,10 +291,6 @@ export class GameScreen {
     });
 
     blocks.forEach(block => block.addObserver(this.scoreManager));
-
-    /**
-     * DEBUG - POWER UPS
-     */
     blocks.forEach(block => block.addObserver(this));
 
     return {
@@ -406,15 +357,15 @@ export class GameScreen {
     ball.forEach(ball => ball.increaseSpeed(bSpeed));
   }
 
+  // Observer
   update({ x, y, width, height, type = 'Unknown' }) {
-    /**
-     * DEBUG POWER UPS
-     */
+    // Temporal solution to test power ups
     const num = getRandomNum(1, 4);
     if (num === 2 && type === 'Block') {
+      console.log('Se genero un power up!');
+
       const p5 = this.p5;
       const canvasHeight = this.canvasHeight;
-      console.log('Se genero un power up');
 
       const powerUp = new PowerUp({
         x,
@@ -424,14 +375,19 @@ export class GameScreen {
         type: 'PowerUp - Multiple',
         callBack: this.powerUpMultipleBalls.bind(this, 2),
       });
+
       powerUp.addCollisionObject(this.player);
       powerUp.addObserver(this);
 
       this.powerUps.push(powerUp);
     } else if (type.includes('PowerUp')) {
-      console.log('Me notifico un PowerUp');
       this.powerUps = this.powerUps.filter(p => p.isActive());
     }
+  }
+
+  handlePowerUps() {
+    this.powerUps = this.powerUps.filter(p => !p.isBelowScreen());
+    this.p5.text(`Power ups: ${this.powerUps.length}`, 10, this.canvasHeight - 115);
   }
 
   /******************************************************
@@ -453,6 +409,7 @@ export class GameScreen {
       const posCurrentBall = currentBall.getPositionVector();
       let speedCurrentBall = currentBall.getSpeedVector();
       speedCurrentBall.x *= -1;
+      speedCurrentBall.y *= i % 2 === 0 ? -1 : 1;
   
       newBall.setPositionVector(posCurrentBall);
       newBall.setSpeedVector(speedCurrentBall);

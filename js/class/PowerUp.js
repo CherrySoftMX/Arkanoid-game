@@ -39,8 +39,8 @@ export class PowerUp extends Collisionable {
     this.update();
     this.p5.fill(255);
     this.p5.rect(this.pos.x, this.pos.y, this.width, this.height);
-    this.p5.fill(0);
-    this.p5.text(this.type, this.pos.x + 10, this.pos.y + 10);
+    this.p5.fill(4, 4, 4);
+    this.p5.text(this.type, this.pos.x + 5, this.pos.y + 5);
   }
 
   update() {
