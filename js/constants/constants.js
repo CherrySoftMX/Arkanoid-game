@@ -17,6 +17,7 @@ export const CONSTANTS = {
   BALL_SPEED_INCREASE: 0.2,
   POWER_UP_BLOCK: '?',
   PLAYER_INITIAL_LIVES: 3,
+  POWER_UP_FALL_SPEED: 3,
 };
 
 // Durabilidad negativa significa indestructible

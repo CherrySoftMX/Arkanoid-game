@@ -1,3 +1,4 @@
+import { CONSTANTS } from '../constants/constants.js';
 import { Collisionable } from './Collisionable.js';
 
 // ToDo: Extract common methods between classes
@@ -14,7 +15,7 @@ export class PowerUp extends Collisionable {
     callback = () => console.warn('Default PowerUp activated'),
    }) {
     super({ width, height, x, y, type });
-    this.speed = 3;
+    this.speed = CONSTANTS.POWER_UP_FALL_SPEED;
 
     this.pos = p5.createVector(x, y);
     this.vel = p5.createVector(0, this.speed);
