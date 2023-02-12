@@ -12,28 +12,52 @@ const CONSTANTS = {
   INITIAL_LEVEL: 0,
 };
 
+// Durabilidad negativa significa indestructible
+const BLOCK_TYPES = {
+  '*': {
+    durability: 0,
+    color: '#000',
+    score: 0,
+  },
+  '_': {
+    durability: 1,
+    color: '#FF5531',
+    score: 100,
+  },
+  '-': {
+    durability: 2,
+    color: '#6B31FF',
+    score: 80,
+  },
+  '#': {
+    durability: -1,
+    color: '#928E9B',
+    score: 0,
+  },
+};
+
 const LEVELS = [
   [
     ['_', '_', '_', '_', '_'],
     ['_', '_', '_', '_', '_'],
-    //['_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_'],
     //['_', '_', '_', '_', '_'],
     //['_', '_', '_', '_', '_'],
   ],
   [
     ['*', '_', '_', '_', '*'],
-    ['_', '_', '*', '_', '_'],
-    ['_', '*', '_', '*', '_'],
+    ['_', '-', '*', '-', '_'],
+    ['_', '*', '-', '*', '_'],
     ['_', '_', '*', '_', '_'],
     ['*', '_', '_', '_', '*'],
-    ['_', '*', '_', '*', '_'],
+    ['-', '*', '-', '*', '-'],
   ],
   [
-    ['_', '*', '*', '_'],
-    ['_', '_'],
-    ['*', '_', '_', '*'],
-    ['_', '_', '_', '_'],
-    ['_', '*', '_', '*', '_'],
+    ['-', '*',, '#', '*', '-'],
+    ['_', '-', '_', '-', '_'],
+    ['#', '_', '_', '_', '#'],
+    ['-', '_', '-', '_', '-'],
+    ['_', '*', '#', '*', '_'],
   ],
 ];
 
@@ -82,6 +106,7 @@ class GameScreen {
   constructor(options) {
     this.canvasHeight = window.innerHeight * options.PREFERED_HEIGHT;
     this.canvasWidth = (this.canvasHeight * options.ASPECT_RATIO_H) / options.ASPECT_RATIO_V;
+    // La coordenada (y) a partir de la cual empieza el area de juego
     this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * CANVAS_SETTINGS.SCORE_DISPLAY_HEIGHT);
     this.SCORE_AREA_HEIGHT = this.CANVAS_GAME_AREA_Y;
 
@@ -160,7 +185,8 @@ class GameScreen {
   }
 
   startNextLevelLoad() {
-    if (this.currentLevel >= LEVELS.length) {
+    const isGameFinished = this.currentLevel >= LEVELS.length;
+    if (isGameFinished) {
       this.displayCenteredText('¡GAME CLEARED!');
       return;
     }
@@ -170,12 +196,13 @@ class GameScreen {
       this.displayCenteredText(`LEVEL ${this.currentLevel} CLEARED!`);
       return;
     }
-    if (this.currentLevel < LEVELS.length) {
+    if (!isGameFinished) {
       this.currentLevel += 1;
     }
 
     this.isLoadingNextLevel = true;
 
+    // Cargar el nuevo nivel despues de 3.5 segundos
     setTimeout(() => {
       const {
         blocks,
@@ -217,7 +244,16 @@ class GameScreen {
       // de bloques en la fila
       const blocksWidth = canvasWidth / levelRow.length;
       for (let j = 0; j < levelRow.length; j++) {
-        const newBlock = new Block(blocksWidth, blocksHeight, blockX, blockY);
+        const blockType = levelRow[j];
+        const newBlock = new Block(
+          blocksWidth,
+          blocksHeight,
+          blockX,
+          blockY,
+          BLOCK_TYPES[blockType].score,
+          BLOCK_TYPES[blockType].durability,
+          blockType,
+        );
         if (levelRow[j] === '*') {
           newBlock.destroy();
         }
@@ -623,7 +659,7 @@ class Ball {
  */
 class Block {
 
-  constructor(width, height, x, y, score = 100) {
+  constructor(width, height, x, y, score = 100, durability = 1, blockType = '_') {
     this.width = width;
     this.height = height;
     this.x = x;
@@ -633,11 +669,14 @@ class Block {
     this.isDestroyed = false;
 
     this.observers = [];
+
+    this.durability = durability;
+    this.blockType = blockType;
   }
 
   draw() {
     if (this.isDestroyed) return;
-    fill(255, 85, 49);
+    fill(BLOCK_TYPES[this.blockType].color);
     //fill(94, 92, 92);
     //stroke(254, 254, 254);
     strokeWeight(1);
@@ -645,8 +684,11 @@ class Block {
   }
 
   onCollision() {
-    this.destroy();
+    this.durability -= 1;
     this.notifyAll();
+    if (this.durability === 0) {
+      this.destroy();
+    }
   }
 
   destroy() {
