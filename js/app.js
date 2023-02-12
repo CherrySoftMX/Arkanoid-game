@@ -12,9 +12,9 @@ const CANVAS_SETTINGS = {
 const CONSTANTS = {
   PLAYER_SPEED: 4,
   BALL_SPEED: 4,
-  INITIAL_LEVEL: 2,
+  INITIAL_LEVEL: 0,
   PLAYER_SPEED_INCREASE: 0.25,
-  BALL_SPEED_INCREASE: 0.8,
+  BALL_SPEED_INCREASE: 0.2,
 };
 
 // Durabilidad negativa significa indestructible
@@ -45,7 +45,7 @@ const LEVELS = [
   [
     ['_', '_', '_', '_', '_'],
     ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
+    //['_', '_', '_', '_', '_'],
     //['_', '_', '_', '_', '_'],
     //['_', '_', '_', '_', '_'],
   ],
@@ -647,6 +647,7 @@ class Ball {
       objectHeight: this.height,
     });
     
+    this.baseSpeed = CONSTANTS.BALL_SPEED;
     this.speed = CONSTANTS.BALL_SPEED;
 
     this.playerReference = player;
@@ -669,6 +670,9 @@ class Ball {
     fill(255);
     this.update();
     ellipse(this.pos.x, this.pos.y, this.width, this.height);
+
+    text(this.vel.x, 10, this.container.height - 100);
+    text(this.vel.y, 10, this.container.height - 85);
   }
 
   update() {
@@ -676,6 +680,43 @@ class Ball {
     if (!this.isActive()) return;
     this.pos.add(this.vel);
     this.detectCollisions();
+    this.handleAcceleration();
+  }
+
+  handleAcceleration() {
+    const accX = this.vel.x < 0 ? -this.vel.x : this.vel.x;
+    const accY = this.vel.y < 0 ? -this.vel.y : this.vel.y;
+    const DECELARATION_TIME = 90;
+    if (accX > this.baseSpeed) {
+      const speedDiferenceX = accX - this.baseSpeed;
+      const deceleration = speedDiferenceX / DECELARATION_TIME; // 60 -> frames -> 1 segundo
+      if (this.vel.x > 0) {
+        this.vel.x -= deceleration;
+        if (this.vel.x < this.baseSpeed) {
+          this.vel.x = this.baseSpeed;
+        }
+      } else {
+        this.vel.x += deceleration;
+        if (this.vel.x > (-this.baseSpeed)) {
+          this.vel.x = -this.baseSpeed;
+        }
+      }
+    }
+    if (accY > this.baseSpeed) {
+      const speedDiferenceY = accY - this.baseSpeed;
+      const deceleration = speedDiferenceY / DECELARATION_TIME; // 60 -> frames -> 1 segundo
+      if (this.vel.y > 0) {
+        this.vel.y -= deceleration;
+        if (this.vel.y < this.baseSpeed) {
+          this.vel.y = this.baseSpeed;
+        }
+      } else {
+        this.vel.y += deceleration;
+        if (this.vel.y > (-this.baseSpeed)) {
+          this.vel.y = -this.baseSpeed;
+        }
+      }
+    }
   }
 
   shouldMoveToLeft() {
@@ -759,22 +800,22 @@ class Ball {
 
   onCollision({ type, x, y, width, height }) {
     const prevVel = this.vel.copy();
+    const acceleration = 1.5;
 
     switch (type) {
       case 'Block':
         this.handleBlockCollision({x, y, width, height});
         break;
       case 'TopBorder':
-        this.vel.y *= -1;
+        this.vel.y = this.speed * acceleration;
         break;
       case 'LeftBorder':
-        this.vel.x *= -1;
+        this.vel.x = this.speed * acceleration;
         break;
       case 'RightBorder':
-        this.vel.x *= -1;
+        this.vel.x = this.speed * (-acceleration);
         break;
       case 'Player':
-
         const relativeX = map(this.pos.x, x, x + width, 0, 40);
         let newXDirection = 0;
         let ySpeed = -this.speed;
@@ -782,14 +823,14 @@ class Ball {
           newXDirection = -1;
         } else if (relativeX < 20) {
           newXDirection = -0.5;
-          ySpeed = this.speed * 1.4 * (-1);
+          ySpeed = this.speed * 1.3 * (-1);
         } else if (relativeX < 30) {
           newXDirection = 0.5;
-          ySpeed = this.speed * 1.4 * (-1);
+          ySpeed = this.speed * 1.3 * (-1);
         } else {
           newXDirection = 1;
         }
-        this.vel.set(newXDirection * this.speed, ySpeed);
+        this.vel.set(newXDirection * this.speed * acceleration, ySpeed * acceleration);
         break;
     }
 
