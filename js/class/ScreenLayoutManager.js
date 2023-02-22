@@ -3,7 +3,7 @@ import { GameButton } from './GameButton.js';
 
 export class ScreenLayoutManager {
 
-  constructor({ p5 }) {
+  constructor() {
     this.layout = LAYOUT_TYPES.HORIZONTAL;
     this.gameScreenData = {
       width: 0,
@@ -11,8 +11,10 @@ export class ScreenLayoutManager {
       y: 0,
     };
     this.layoutData = {
-      screen: this.gameScreenData,
+      gameScreen: this.gameScreenData,
       buttons: [],
+      windowWidth: 0,
+      windowHeight: 0,
     };
   }
 
@@ -83,6 +85,13 @@ export class ScreenLayoutManager {
       };
     }
 
+    this.layoutData = {
+      ...this.layoutData,
+      gameScreen: this.gameScreenData,
+      windowWidth,
+      windowHeight,
+    };
+    console.log(this.layoutData);
     return this.layoutData;
   }
 
@@ -115,12 +124,24 @@ export class ScreenLayoutManager {
     return this.layoutData.buttons;
   }
 
-  getScreen() {
-    return this.layoutData.screen;
+  getGameScreenData() {
+    return this.layoutData.gameScreen;
   }
 
   getCurrentLayoutType() {
     return this.layout;
+  }
+
+  getGameScreenWidth() {
+    return this.layoutData.gameScreen.width;
+  }
+
+  getWindowWidth() {
+    return this.layoutData.windowWidth;
+  }
+
+  getWindowHeight() {
+    return this.layoutData.windowHeight;
   }
 
 }

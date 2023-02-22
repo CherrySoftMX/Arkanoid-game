@@ -3,24 +3,28 @@ import { calculateCoordsToCenterItem } from '../utils/utils.js';
 
 export class Player {
   
-  constructor(canvasWidth, canvasHeight, canvasX, canvasY, p5) {
+  constructor(gameAreaData, canvasWidth, canvasHeight, canvasX, canvasY, p5) {
     this.p5 = p5;
+
+    this.gameAreaData = gameAreaData;
 
     this.width = Math.ceil(canvasWidth * 0.2);
     this.height = 20;
 
     this.container = {
-      width: canvasWidth,
-      height: canvasHeight,
-      x: canvasX,
-      y: canvasY,
+      width: this.gameAreaData.width,
+      height: this.gameAreaData.width,
+      x: this.gameAreaData.x,
+      y: this.gameAreaData.y,
     };
 
     const { x } = calculateCoordsToCenterItem({
-      windowWidth: canvasWidth,
-      windowHeight: canvasHeight,
+      windowWidth: this.gameAreaData.width,
+      windowHeight: this.gameAreaData.width,
       objectHeight: this.height,
       objectWidth: this.width,
+      relativeToX: gameAreaData.x,
+      relativeToY: gameAreaData.y,
     });
 
     this.x = x;
@@ -76,12 +80,12 @@ export class Player {
   }
 
   shouldMoveToLeft() {
-    const isInsideScreen = (this.pos.x - this.speed) >= 0;
+    const isInsideScreen = (this.pos.x - this.speed) >= this.container.x;
     return isInsideScreen; 
   }
 
   shouldMoveToRight() {
-    const isInsideScreen = this.pos.x + this.speed <= this.container.width - this.width;
+    const isInsideScreen = this.pos.x + this.speed <= this.container.width - this.width + this.container.x;
     return isInsideScreen;
   }
 

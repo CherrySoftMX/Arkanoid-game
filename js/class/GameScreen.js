@@ -8,31 +8,31 @@ import { Ball } from './Ball.js';
 import { Collisionable } from './Collisionable.js';
 import { PowerUp } from './PowerUp.js';
 import { TEXT_LABELS } from '../constants/strings.js';
+import { ScreenLayoutManager } from './ScreenLayoutManager.js';
 
 export class GameScreen {
   
   constructor(options, p5) {
     this.p5 = p5;
 
-    this.canvasHeight = window.innerHeight * options.PREFERED_HEIGHT;
-    this.canvasWidth = (this.canvasHeight * options.ASPECT_RATIO_H) / options.ASPECT_RATIO_V;
+    this.layoutManager = new ScreenLayoutManager();
+    this.layoutManager.calculateLayout();
+
+    this.canvasHeight = this.layoutManager.getWindowHeight();
+    this.canvasWidth = this.layoutManager.getWindowWidth();
+
+    this.gameAreaData = this.layoutManager.getGameScreenData();
+
     // La coordenada (y) a partir de la cual empieza el area de juego
     this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * options.SCORE_DISPLAY_HEIGHT);
     this.SCORE_AREA_HEIGHT = this.CANVAS_GAME_AREA_Y;
 
     this.canvas = p5.createCanvas(this.canvasWidth, this.canvasHeight);
 
-    const { x, y } = calculateCoordsToCenterItem({
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-      objectHeight: this.canvasHeight,
-      objectWidth: this.canvasWidth,
-    });
-
-    this.canvasX = x;
-    this.canvasY = y;
+    this.canvasX = 0;
+    this.canvasY = 0;
   
-    this.canvas.position(x, y);
+    this.canvas.position(this.canvasX, this.canvasY);
 
     this.currentLevel = CONSTANTS.INITIAL_LEVEL;
 
@@ -73,7 +73,7 @@ export class GameScreen {
     this.p5.fill(254, 254, 254);
     this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
     this.p5.textSize(this.canvasWidth * 0.07);
-    this.p5.text(TEXT_LABELS.GAME_TITLE, this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
+    //this.p5.text(TEXT_LABELS.GAME_TITLE, this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
     this.p5.pop();
   }
 
@@ -89,6 +89,12 @@ export class GameScreen {
     this.scoreManager.draw();
     this.handleMultipleBalls();
     this.handlePowerUps();
+
+    this.p5.push();
+    this.layoutManager.getButtons().forEach(btn => {
+      this.p5.rect(btn.x, btn.y, btn.width, btn.height);
+    });
+    this.p5.pop();
   
     this.handleEndGame();
   }
@@ -274,6 +280,7 @@ export class GameScreen {
     });
 
     const newPlayer = new Player(
+      this.gameAreaData,
       this.canvasWidth,
       this.canvasHeight,
       this.canvasX,
