@@ -25,6 +25,8 @@ export class GameScreen {
 
     // La coordenada (y) a partir de la cual empieza el area de juego
     this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * options.SCORE_DISPLAY_HEIGHT);
+    this.CANVAS_GAME_AREA_X = this.gameAreaData.x;
+    this.CANVAS_GAME_AREA_WIDTH = this.gameAreaData.width;
     this.SCORE_AREA_HEIGHT = this.CANVAS_GAME_AREA_Y;
 
     this.canvas = p5.createCanvas(this.canvasWidth, this.canvasHeight);
@@ -241,13 +243,13 @@ export class GameScreen {
     const blocksMargin = 0;
 
     let levelRow = structure[0];
-    let blockX = blocksMargin + this.gameAreaData.x;
+    let blockX = blocksMargin + this.CANVAS_GAME_AREA_X;
     const gameAreaWidth = this.gameAreaData.width;
     // Los bloques comienzan a dibujarse en el area de juego
     let blockY = blocksMargin + this.CANVAS_GAME_AREA_Y;
     for (let i = 0; i < structure.length; i++) {
       levelRow = structure[i];
-      blockX = blocksMargin + this.gameAreaData.x;
+      blockX = blocksMargin + this.CANVAS_GAME_AREA_X;
       // El ancho de los bloques puede variar de acuerdo al número
       // de bloques en la fila
       const blocksWidth = gameAreaWidth / levelRow.length;
@@ -345,7 +347,7 @@ export class GameScreen {
     const leftBorder = new Collisionable({
       width: 10,
       height: this.canvasHeight,
-      x: -10,
+      x: this.CANVAS_GAME_AREA_X - 10,
       y: 0,
       type: 'LeftBorder',
     });
@@ -353,7 +355,7 @@ export class GameScreen {
     const rightBorder = new Collisionable({
       width: 10,
       height: this.canvasHeight,
-      x: this.canvasWidth,
+      x: this.CANVAS_GAME_AREA_X + this.CANVAS_GAME_AREA_WIDTH,
       y: 0,
       type: 'RightBorder',
     });
@@ -362,7 +364,7 @@ export class GameScreen {
       width: this.canvasWidth,
       height: 10,
       x: 0,
-      y: -10 + this.CANVAS_GAME_AREA_Y,
+      y: this.CANVAS_GAME_AREA_Y - 10,
       type: 'TopBorder',
     });
 
