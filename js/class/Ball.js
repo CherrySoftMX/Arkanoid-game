@@ -104,6 +104,7 @@ export class Ball {
 
   isBelowScreen() {
     this.isOutOfField = this.pos.y - this.height >= this.gameAreaData.y + this.gameAreaData.width;
+    if (this.isOutOfField) console.log('ESTA FUERA');
     return this.isOutOfField;
   }
 
@@ -266,6 +267,7 @@ export class Ball {
   followPlayer(player) {
     this.playerReference = player;
     this.isFollowingPlayer = true;
+    this.handleFollowPlayer();
   }
 
   setPlayerReference(player) {

@@ -64,6 +64,7 @@ export class GameScreen {
     this.isLoadingNextLevel = false;
     this.lives = CONSTANTS.PLAYER_INITIAL_LIVES;
     this.isOnMenu = true;
+    this.isLevelStarted = false;
 
     this.powerUps = [];
 
@@ -102,6 +103,7 @@ export class GameScreen {
     this.handleMultipleBalls();
     this.handlePowerUps();
     this.drawButtons();
+    this.drawHelpMessage();
   
     this.handleEndGame();
   }
@@ -113,6 +115,13 @@ export class GameScreen {
       this.p5.rect(btn.x, btn.y, btn.width, btn.height);
     });
     this.p5.pop();
+  }
+
+  drawHelpMessage() {
+    if (this.isLevelStarted) return;
+    this.displayCenteredText({
+      message: TEXT_LABELS.START_LEVEL_HELP,
+    });
   }
 
   generateMenu() {
@@ -141,7 +150,7 @@ export class GameScreen {
     const numOfBalls = this.balls.length;
     if (numOfBalls === 0) {
       if (this.lives < 1) {
-        this.displayCenteredText(TEXT_LABELS.GAME_OVER);
+        this.displayCenteredText({ message: TEXT_LABELS.GAME_OVER });
         this.scoreManager.saveHighestScore(this.scoreManager.getScore());
         this.scoreManager.score = 0;
       } else {
@@ -158,7 +167,12 @@ export class GameScreen {
     const input = key ? key : this.p5.keyCode;
     if (this.p5.keyIsPressed || this.p5.mouseIsPressed) {
       this.player.controlInputs(input);
-      this.balls.forEach(ball => ball.handleKeyPressed(input));
+
+      // 32 -> Spacebar
+      if (input === 32) {
+        this.balls.forEach(ball => ball.handleKeyPressed(input));
+        this.isLevelStarted = true;
+      }
     }
   }
 
@@ -167,12 +181,15 @@ export class GameScreen {
   }
 
   handleTouchStarted() {
+    if (this.isOnMenu) return;
     const mouseX = this.p5.mouseX;
     const mouseY = this.p5.mouseY;
 
     this.layoutManager.getButtons().forEach(btn => btn.click({ mouseX, mouseY }));
-    if (!this.isOnMenu && this.isClickOnGameArea({ mouseX, mouseY })) {
+    if (this.isLevelStarted) return;
+    if (this.isClickOnGameArea({ mouseX, mouseY })) {
       this.balls.forEach(ball => ball.stopFollowPlayer());
+      this.isLevelStarted = true;
     }
   }
 
@@ -182,7 +199,6 @@ export class GameScreen {
 
   handleMultipleBalls() {
     this.balls = this.balls.filter(b => !b.isBelowScreen());
-    this.p5.text(`Balls: ${this.balls.length}`, 10, this.canvasHeight - 130);
   }
 
   isClickOnGameArea({ mouseX, mouseY }) {
@@ -191,12 +207,21 @@ export class GameScreen {
     return isClickOnGameAreaX && isClickOnGameAreaY;
   }
 
-  displayCenteredText(message = 'Debug message') {
+  displayCenteredText({
+    message = 'Debug message',
+    wrapStyle,
+    boxWidth = this.CANVAS_GAME_AREA_WIDTH,
+    boxHeight = this.CANVAS_GAME_AREA_WIDTH,
+  }) {
     this.p5.push();
+    if (wrapStyle) {
+      this.p5.textWrap(wrapStyle);
+    }
     this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
+    this.p5.rectMode(this.p5.CORNERS);
     this.p5.textSize(20);
     this.p5.fill(255);
-    this.p5.text(message, this.canvasWidth / 2, this.canvasHeight / 2);
+    this.p5.text(message, 0, 0, boxWidth, boxHeight);
     this.p5.pop();
   }
 
@@ -207,14 +232,14 @@ export class GameScreen {
   startNextLevelLoad({ resetCurrentLevel = false }) {
     const isGameFinished = this.currentLevel >= LEVELS.length;
     if (isGameFinished) {
-      this.displayCenteredText(TEXT_LABELS.GAME_CLEARED);
+      this.displayCenteredText({ message: TEXT_LABELS.GAME_CLEARED });
       return;
     }
     if (this.isLoadingNextLevel && !resetCurrentLevel) {
-      this.displayCenteredText(TEXT_LABELS.STAGE_CLEAR(this.currentLevel));
+      this.displayCenteredText({ message: TEXT_LABELS.STAGE_CLEAR(this.currentLevel) });
       return;
     } else if (this.isLoadingNextLevel && resetCurrentLevel) {
-      this.displayCenteredText(TEXT_LABELS.LIVE_LOST(this.lives));
+      this.displayCenteredText({ message: TEXT_LABELS.LIVE_LOST(this.lives) });
       return;
     }
     if (!isGameFinished && !resetCurrentLevel) {
@@ -262,6 +287,7 @@ export class GameScreen {
       }
 
       this.isLoadingNextLevel = false;
+      this.isLevelStarted = false;
     }, 3500);
   }
 
@@ -453,7 +479,6 @@ export class GameScreen {
 
   handlePowerUps() {
     this.powerUps = this.powerUps.filter(p => !p.isBelowScreen());
-    this.p5.text(`Power ups: ${this.powerUps.length}`, 10, this.canvasHeight - 115);
   }
 
   /******************************************************
