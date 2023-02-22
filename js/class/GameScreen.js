@@ -91,6 +91,7 @@ export class GameScreen {
     this.handlePowerUps();
 
     this.p5.push();
+    this.p5.fill(60, 60, 60);
     this.layoutManager.getButtons().forEach(btn => {
       this.p5.rect(btn.x, btn.y, btn.width, btn.height);
     });
@@ -240,15 +241,16 @@ export class GameScreen {
     const blocksMargin = 0;
 
     let levelRow = structure[0];
-    let blockX = blocksMargin;
+    let blockX = blocksMargin + this.gameAreaData.x;
+    const gameAreaWidth = this.gameAreaData.width;
     // Los bloques comienzan a dibujarse en el area de juego
     let blockY = blocksMargin + this.CANVAS_GAME_AREA_Y;
     for (let i = 0; i < structure.length; i++) {
       levelRow = structure[i];
-      blockX = blocksMargin;
+      blockX = blocksMargin + this.gameAreaData.x;
       // El ancho de los bloques puede variar de acuerdo al número
       // de bloques en la fila
-      const blocksWidth = canvasWidth / levelRow.length;
+      const blocksWidth = gameAreaWidth / levelRow.length;
       for (let j = 0; j < levelRow.length; j++) {
         const blockType = levelRow[j];
         const newBlock = new Block(
