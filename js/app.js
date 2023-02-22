@@ -22,4 +22,12 @@ new p5((p) => {
     game.handleKeyPressed();
   };
 
+  p.touchStarted = () => {
+    game.handleTouchStarted();
+  };
+
+  p.touchEnded = () => {
+    game.handleTouchReleased();
+  };
+
 });

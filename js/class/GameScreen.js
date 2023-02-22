@@ -1,4 +1,4 @@
-import { CONSTANTS, BLOCK_TYPES, CANVAS_SETTINGS } from '../constants/constants.js';
+import { CONSTANTS, BLOCK_TYPES, CANVAS_SETTINGS, BUTTON_TYPES } from '../constants/constants.js';
 import { LEVELS } from '../constants/levels.js';
 import { calculateCoordsToCenterItem } from '../utils/utils.js';
 import { ScoreManager } from './ScoreManager.js';
@@ -17,6 +17,14 @@ export class GameScreen {
 
     this.layoutManager = new ScreenLayoutManager();
     this.layoutManager.calculateLayout();
+
+    // Simular que se presionan las flechas del teclado cuando
+    // se presionan los botones en pantalla
+    this.layoutManager.getButtons().forEach(btn => {
+      const simulatedInput = btn.type === BUTTON_TYPES.LEFT ? this.p5.LEFT_ARROW : this.p5.RIGHT_ARROW;
+      btn.setOnClick(() => this.handleKeyPressed(simulatedInput));
+      btn.setOnClickRelease(() => this.handleKeyReleased());
+    });
 
     this.canvasHeight = this.layoutManager.getWindowHeight();
     this.canvasWidth = this.layoutManager.getWindowWidth();
@@ -92,15 +100,18 @@ export class GameScreen {
     this.scoreManager.draw();
     this.handleMultipleBalls();
     this.handlePowerUps();
+    this.drawButtons();
+  
+    this.handleEndGame();
+  }
 
+  drawButtons() {
     this.p5.push();
     this.p5.fill(60, 60, 60);
     this.layoutManager.getButtons().forEach(btn => {
       this.p5.rect(btn.x, btn.y, btn.width, btn.height);
     });
     this.p5.pop();
-  
-    this.handleEndGame();
   }
 
   generateMenu() {
@@ -142,20 +153,31 @@ export class GameScreen {
     }
   }
 
-  handleKeyPressed() {
-    if (this.p5.keyIsPressed) {
-      this.player.controlInputs(this.p5.keyCode);
-      this.balls.forEach(ball => ball.handleKeyPressed(this.p5.keyCode));
+  handleKeyPressed(key) {
+    const input = key ? key : this.p5.keyCode;
+    if (this.p5.keyIsPressed || this.p5.mouseIsPressed) {
+      this.player.controlInputs(input);
+      this.balls.forEach(ball => ball.handleKeyPressed(input));
     }
+  }
+
+  handleKeyReleased() {
+    this.player.keyReleased();
+  }
+
+  handleTouchStarted() {
+    const mouseX = this.p5.mouseX;
+    const mouseY = this.p5.mouseY;
+    this.layoutManager.getButtons().forEach(btn => btn.click({ mouseX, mouseY }));
+  }
+
+  handleTouchReleased() {
+    this.layoutManager.getButtons().forEach(btn => btn.clickReleased());
   }
 
   handleMultipleBalls() {
     this.balls = this.balls.filter(b => !b.isBelowScreen());
     this.p5.text(`Balls: ${this.balls.length}`, 10, this.canvasHeight - 130);
-  }
-
-  handleKeyReleased() {
-    this.player.keyReleased();
   }
 
   displayCenteredText(message = 'Debug message') {
