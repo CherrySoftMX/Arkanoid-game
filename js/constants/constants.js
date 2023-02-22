@@ -9,6 +9,17 @@ export const CANVAS_SETTINGS = {
   BTN_ASPECT_RATIO_H: 16,
 };
 
+export const LAYOUT_TYPES = {
+  HORIZONTAL: 'HORIZONTAL',
+  VERTICAL: 'VERTICAL',
+  SQUARE: 'SQUARE',
+};
+
+export const BUTTON_TYPES = {
+  LEFT: 'LEFT',
+  RIGHT: 'RIGHT',
+};
+
 export const CONSTANTS = {
   PLAYER_SPEED: 4,
   BALL_SPEED: 4,
