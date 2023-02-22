@@ -35,6 +35,7 @@ export class GameScreen {
     this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * options.SCORE_DISPLAY_HEIGHT);
     this.CANVAS_GAME_AREA_X = this.gameAreaData.x;
     this.CANVAS_GAME_AREA_WIDTH = this.gameAreaData.width;
+    this.CANVAS_GAME_AREA_END_X = this.gameAreaData.x + this.gameAreaData.width;
     this.CANVAS_GAME_AREA_END_Y = this.gameAreaData.y + this.gameAreaData.width;
     this.SCORE_AREA_HEIGHT = this.CANVAS_GAME_AREA_Y;
 
@@ -168,7 +169,11 @@ export class GameScreen {
   handleTouchStarted() {
     const mouseX = this.p5.mouseX;
     const mouseY = this.p5.mouseY;
+
     this.layoutManager.getButtons().forEach(btn => btn.click({ mouseX, mouseY }));
+    if (!this.isOnMenu && this.isClickOnGameArea({ mouseX, mouseY })) {
+      this.balls.forEach(ball => ball.stopFollowPlayer());
+    }
   }
 
   handleTouchReleased() {
@@ -178,6 +183,12 @@ export class GameScreen {
   handleMultipleBalls() {
     this.balls = this.balls.filter(b => !b.isBelowScreen());
     this.p5.text(`Balls: ${this.balls.length}`, 10, this.canvasHeight - 130);
+  }
+
+  isClickOnGameArea({ mouseX, mouseY }) {
+    const isClickOnGameAreaX = mouseX >= this.CANVAS_GAME_AREA_X && mouseX <= this.CANVAS_GAME_AREA_END_X;
+    const isClickOnGameAreaY = mouseY >= this.CANVAS_GAME_AREA_Y && mouseY <= this.CANVAS_GAME_AREA_END_Y;
+    return isClickOnGameAreaX && isClickOnGameAreaY;
   }
 
   displayCenteredText(message = 'Debug message') {
