@@ -2,8 +2,9 @@ import { calculateCoordsToCenterItem, getRandomNum } from '../utils/utils.js';
 import { CONSTANTS } from '../constants/constants.js';
 
 export class Ball {
-  constructor(canvasWidth, canvasHeight, canvasX, canvasY, player, p5) {
+  constructor(gameAreaData, canvasWidth, canvasHeight, canvasX, canvasY, player, p5) {
     this.p5 = p5;
+    this.gameAreaData = gameAreaData;
 
     this.width = 20;
     this.height = this.width;
@@ -20,6 +21,8 @@ export class Ball {
       windowHeight: canvasHeight,
       objectWidth: this.width,
       objectHeight: this.height,
+      relativeToX: this.gameAreaData.x,
+      relativeToY: this.gameAreaData.y,
     });
     
     this.baseSpeed = CONSTANTS.BALL_SPEED;
@@ -49,9 +52,6 @@ export class Ball {
     this.p5.fill(255);
     this.update();
     this.p5.ellipse(this.pos.x, this.pos.y, this.width, this.height);
-
-    this.p5.text(`Vel x: ${this.vel.x}`, 10, this.container.height - 100);
-    this.p5.text(`Vel y: ${this.vel.y}`, 10, this.container.height - 85);
   }
 
   update() {
@@ -102,32 +102,8 @@ export class Ball {
     }
   }
 
-  shouldMoveToLeft() {
-    const isInsideScreen = (this.pos.x - this.speed) >= 0;
-    return isInsideScreen; 
-  }
-
-  shouldMoveToRight() {
-    const isInsideScreen = this.pos.x + this.speed <= this.container.width - (this.width / 2);
-    return isInsideScreen;
-  }
-
-  shouldMoveToTop() {
-    const isInsideScreen = this.pos.y - this.speed >= 0;
-    return isInsideScreen;
-  }
-
-  shouldMoveToBottom() {
-    const isInsideScreen = this.pos.y + this.speed <= (this.container.height - (this.height / 2));
-    return isInsideScreen;
-  }
-
-  shouldMove() {
-    return this.shouldMoveToLeft() && this.shouldMoveToRight() && this.shouldMoveToTop();
-  }
-
   isBelowScreen() {
-    this.isOutOfField = this.pos.y - this.height >= this.container.height;
+    this.isOutOfField = this.pos.y - this.height >= this.gameAreaData.y + this.gameAreaData.width;
     return this.isOutOfField;
   }
 

@@ -27,6 +27,7 @@ export class GameScreen {
     this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * options.SCORE_DISPLAY_HEIGHT);
     this.CANVAS_GAME_AREA_X = this.gameAreaData.x;
     this.CANVAS_GAME_AREA_WIDTH = this.gameAreaData.width;
+    this.CANVAS_GAME_AREA_END_Y = this.gameAreaData.y + this.gameAreaData.width;
     this.SCORE_AREA_HEIGHT = this.CANVAS_GAME_AREA_Y;
 
     this.canvas = p5.createCanvas(this.canvasWidth, this.canvasHeight);
@@ -293,6 +294,7 @@ export class GameScreen {
     );
 
     const newBall = new Ball(
+      this.gameAreaData,
       this.canvasWidth,
       this.canvasHeight,
       this.canvasX,
@@ -429,6 +431,7 @@ export class GameScreen {
       const currentBall = this.balls[0];
 
       const newBall = new Ball(
+        this.gameAreaData,
         this.canvasWidth,
         this.canvasHeight,
         this.canvasX,

@@ -28,7 +28,7 @@ export class Player {
     });
 
     this.x = x;
-    this.y = canvasHeight - this.height - 1;
+    this.y = this.gameAreaData.y + this.gameAreaData.width - this.height - 10;
     this.speed = CONSTANTS.PLAYER_SPEED;
 
     this.isDestroyed = false;
