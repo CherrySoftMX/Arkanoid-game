@@ -1,4 +1,4 @@
-import { CONSTANTS, BLOCK_TYPES, CANVAS_SETTINGS, BUTTON_TYPES } from '../constants/constants.js';
+import { CONSTANTS, BLOCK_TYPES, CANVAS_SETTINGS, BUTTON_TYPES, LAYOUT_TYPES } from '../constants/constants.js';
 import { LEVELS } from '../constants/levels.js';
 import { calculateCoordsToCenterItem } from '../utils/utils.js';
 import { ScoreManager } from './ScoreManager.js';
@@ -48,7 +48,7 @@ export class GameScreen {
 
     this.currentLevel = CONSTANTS.INITIAL_LEVEL;
 
-    this.scoreManager = new ScoreManager(this.canvasWidth, this.canvasHeight, this.SCORE_AREA_HEIGHT, p5);
+    this.scoreManager = new ScoreManager(this.gameAreaData, this.canvasWidth, this.canvasHeight, this.SCORE_AREA_HEIGHT, p5);
 
     // Generate game objects
     const {
@@ -86,7 +86,7 @@ export class GameScreen {
     this.p5.fill(254, 254, 254);
     this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
     this.p5.textSize(this.canvasWidth * 0.07);
-    //this.p5.text(TEXT_LABELS.GAME_TITLE, this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
+    this.p5.text(TEXT_LABELS.GAME_TITLE, this.canvasWidth / 2, this.CANVAS_GAME_AREA_Y * 4);
     this.p5.pop();
   }
 
@@ -221,7 +221,11 @@ export class GameScreen {
     this.p5.rectMode(this.p5.CORNERS);
     this.p5.textSize(20);
     this.p5.fill(255);
-    this.p5.text(message, 0, 0, boxWidth, boxHeight);
+    if (this.layoutManager.getCurrentLayoutType === LAYOUT_TYPES.VERTICAL) {
+      this.p5.text(message, 0, 0, boxWidth, boxHeight);
+    } else {
+      this.p5.text(message, this.CANVAS_GAME_AREA_X, 0, boxWidth, boxHeight);
+    }
     this.p5.pop();
   }
 
