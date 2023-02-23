@@ -111,7 +111,6 @@ export class Ball {
 
   isBelowScreen() {
     this.isOutOfField = this.pos.y - this.height >= this.gameAreaData.y + this.gameAreaData.width;
-    if (this.isOutOfField) console.log('ESTA FUERA');
     return this.isOutOfField;
   }
 

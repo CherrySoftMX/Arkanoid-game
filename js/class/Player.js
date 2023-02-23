@@ -30,7 +30,7 @@ export class Player {
 
     this.x = x;
     this.y = this.gameAreaData.y + this.gameAreaData.width - this.height - 10;
-    this.speed = CONSTANTS.PLAYER_SPEED;
+    this.speed = (gameAreaData.width * CONSTANTS.PLAYER_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
 
     this.isDestroyed = false;
 
