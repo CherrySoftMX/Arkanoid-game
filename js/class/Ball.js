@@ -25,13 +25,15 @@ export class Ball {
       relativeToY: this.gameAreaData.y,
     });
     
+
     /*
-      1080p - CONSTANTS.BALL_SPEED * 2
-      canvasHeight - ?
+      La velocidad ideal para {GAME_AREA_HEIGHT_REFERENCE}px de alto
+      es de {BALL_SPEED}px por frame, por lo que se calcula la velocidad
+      para la resolución actual con regla de 3 tomando las refencias para
+      la altura que ya fue probada.
     */
-    //this.baseSpeed = CONSTANTS.BALL_SPEED;
-    this.baseSpeed = (canvasHeight * 1.5 * CONSTANTS.BALL_SPEED) / 1080;
-    this.speed = (canvasHeight * 1.5 * CONSTANTS.BALL_SPEED) / 1080;
+    this.baseSpeed = (gameAreaData.width * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
+    this.speed = (gameAreaData.width * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
 
     this.playerReference = player;
 
@@ -165,11 +167,11 @@ export class Ball {
 
   onCollision({ type, x, y, width, height }) {
     const prevVel = this.vel.copy();
-    const acceleration = 1.5;
+    const acceleration = CONSTANTS.BALL_ACCELERATION;
 
     switch (type) {
       case 'Block':
-        this.handleBlockCollision({x, y, width, height});
+        this.handleBlockCollision({x, y, width, height, acceleration});
         break;
       case 'TopBorder':
         this.vel.y = this.speed * acceleration;
@@ -202,7 +204,7 @@ export class Ball {
     this.pos.sub(prevVel);
   }
 
-  handleBlockCollision({ x, y, width, height }) {
+  handleBlockCollision({ x, y, width, height, acceleration }) {
     const isLeftSideHit = this.iAmColliding({ x, y, width: 1, height });
     const isRightSideHit = this.iAmColliding({ x: x + width, y, width: 1, height });
     const isTopSideHit = this.iAmColliding({ x, y, width, height: 1 });
