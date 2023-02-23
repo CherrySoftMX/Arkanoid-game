@@ -32,11 +32,11 @@ A simple Brick Breaker clone made with p5.js
 - [x] Power Ups
 - [x] Mobile / Touch screen support
 - [x] Sprites proportional to window size
-- [ ] Ball movement speed proportional to window size
-- [ ] Player movement speed proportional to window size
+- [x] Ball movement speed proportional to window size
+- [x] Player movement speed proportional to window size
 - [ ] Touch screen buttons design
 - [ ] Movable bricks
-- [ ] Improve player sprite
+- [x] Improve player sprite
 - [ ] Improve bricks sprites
 - [ ] Improve main menu design
 - [ ] Add sound effects

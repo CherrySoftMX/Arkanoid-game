@@ -45,12 +45,43 @@ export class Player {
     this.movementDirection = 0;
 
     this.isCollisionActive = true;
+
+    this.sprite = this.p5.loadImage('../img/player0.png');
+
+    this.animPosXIncrements = this.width / 50;
+    this.animPosx = 0;
+    this.currentPosXAnim = this.pos.x;
   }
 
   draw() {
+    this.p5.push();
     this.pos.add(this.vel);
     this.p5.fill(255);
-    this.p5.rect(this.pos.x, this.pos.y, this.width, this.height, this.height * 0.3);
+    this.p5.noSmooth();
+
+    this.p5.image(this.sprite, this.pos.x, this.pos.y, this.width, this.height);
+    
+    this.drawPlayerAnimation();
+    this.p5.pop();
+  }
+
+  drawPlayerAnimation() {
+    // Animacion del jugador
+    const animWidth = Math.ceil(this.height * 0.2);
+    const animHeight = animWidth * 1.3;
+    const animPosY = Math.floor(this.pos.y + this.height * 0.4);
+
+    this.p5.fill(50, 180, 221);
+    this.p5.noStroke();
+    this.p5.rect(this.currentPosXAnim, animPosY, animWidth, animHeight);
+    this.animPosx += this.animPosXIncrements;
+  
+    this.currentPosXAnim = this.pos.x + this.animPosx;
+    if (this.currentPosXAnim + animWidth > this.pos.x + this.width) {
+      this.animPosXIncrements *= -1;
+    } else if ((this.currentPosXAnim + this.animPosXIncrements) < this.pos.x) {
+      this.animPosXIncrements *= -1;
+    }
   }
 
   controlInputs(input) {
