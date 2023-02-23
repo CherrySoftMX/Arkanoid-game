@@ -8,8 +8,9 @@ export class Player {
 
     this.gameAreaData = gameAreaData;
 
-    this.width = Math.ceil(canvasWidth * 0.2);
-    this.height = 20;
+    this.width = Math.ceil(gameAreaData.width * 0.2);
+    // Alrededor de 20px para 1920 * 1080
+    this.height = gameAreaData.width * CONSTANTS.PLAYER_HEIGHT;
 
     this.container = {
       width: this.gameAreaData.width,

@@ -303,7 +303,7 @@ export class GameScreen {
    */
   generateLevel({ structure, canvasWidth }) {
     const blocks = [];
-    const blocksHeight = 30;
+    const blocksHeight = this.gameAreaData.width * CONSTANTS.BLOCK_HEIGHT;
     const blocksMargin = 0;
 
     let levelRow = structure[0];

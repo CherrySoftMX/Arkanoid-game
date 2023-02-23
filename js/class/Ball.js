@@ -6,7 +6,7 @@ export class Ball {
     this.p5 = p5;
     this.gameAreaData = gameAreaData;
 
-    this.width = 20;
+    this.width = gameAreaData.width * CONSTANTS.BALL_WIDTH;
     this.height = this.width;
 
     this.container = {
@@ -25,8 +25,13 @@ export class Ball {
       relativeToY: this.gameAreaData.y,
     });
     
-    this.baseSpeed = CONSTANTS.BALL_SPEED;
-    this.speed = CONSTANTS.BALL_SPEED;
+    /*
+      1080p - CONSTANTS.BALL_SPEED * 2
+      canvasHeight - ?
+    */
+    //this.baseSpeed = CONSTANTS.BALL_SPEED;
+    this.baseSpeed = (canvasHeight * 1.5 * CONSTANTS.BALL_SPEED) / 1080;
+    this.speed = (canvasHeight * 1.5 * CONSTANTS.BALL_SPEED) / 1080;
 
     this.playerReference = player;
 
