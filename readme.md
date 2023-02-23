@@ -13,6 +13,8 @@ A simple Brick Breaker clone made with p5.js
 | Right Arrow | Move to right   |
 | Spacebar    | Throw the ball  |
 
+**Note:** Tap the gray rectangles on the sides of the screen to move to left and right on a touch screen device.
+
 ### To do
 - [x] Player movement
 - [x] Adaptable game area viewport
