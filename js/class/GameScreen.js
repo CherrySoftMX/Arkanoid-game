@@ -1,4 +1,4 @@
-import { CONSTANTS, BLOCK_TYPES, CANVAS_SETTINGS } from '../constants/constants.js';
+import { CONSTANTS, BLOCK_TYPES, CANVAS_SETTINGS, BUTTON_TYPES, LAYOUT_TYPES } from '../constants/constants.js';
 import { LEVELS } from '../constants/levels.js';
 import { calculateCoordsToCenterItem } from '../utils/utils.js';
 import { ScoreManager } from './ScoreManager.js';
@@ -8,35 +8,47 @@ import { Ball } from './Ball.js';
 import { Collisionable } from './Collisionable.js';
 import { PowerUp } from './PowerUp.js';
 import { TEXT_LABELS } from '../constants/strings.js';
+import { ScreenLayoutManager } from './ScreenLayoutManager.js';
 
 export class GameScreen {
   
   constructor(options, p5) {
     this.p5 = p5;
 
-    this.canvasHeight = window.innerHeight * options.PREFERED_HEIGHT;
-    this.canvasWidth = (this.canvasHeight * options.ASPECT_RATIO_H) / options.ASPECT_RATIO_V;
+    this.layoutManager = new ScreenLayoutManager();
+    this.layoutManager.calculateLayout();
+
+    // Simular que se presionan las flechas del teclado cuando
+    // se presionan los botones en pantalla
+    this.layoutManager.getButtons().forEach(btn => {
+      const simulatedInput = btn.type === BUTTON_TYPES.LEFT ? this.p5.LEFT_ARROW : this.p5.RIGHT_ARROW;
+      btn.setOnClick(() => this.handleKeyPressed(simulatedInput));
+      btn.setOnClickRelease(() => this.handleKeyReleased());
+    });
+
+    this.canvasHeight = this.layoutManager.getWindowHeight();
+    this.canvasWidth = this.layoutManager.getWindowWidth();
+
+    this.gameAreaData = this.layoutManager.getGameScreenData();
+
     // La coordenada (y) a partir de la cual empieza el area de juego
     this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * options.SCORE_DISPLAY_HEIGHT);
+    this.CANVAS_GAME_AREA_X = this.gameAreaData.x;
+    this.CANVAS_GAME_AREA_WIDTH = this.gameAreaData.width;
+    this.CANVAS_GAME_AREA_END_X = this.gameAreaData.x + this.gameAreaData.width;
+    this.CANVAS_GAME_AREA_END_Y = this.gameAreaData.y + this.gameAreaData.width;
     this.SCORE_AREA_HEIGHT = this.CANVAS_GAME_AREA_Y;
 
     this.canvas = p5.createCanvas(this.canvasWidth, this.canvasHeight);
 
-    const { x, y } = calculateCoordsToCenterItem({
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-      objectHeight: this.canvasHeight,
-      objectWidth: this.canvasWidth,
-    });
-
-    this.canvasX = x;
-    this.canvasY = y;
+    this.canvasX = 0;
+    this.canvasY = 0;
   
-    this.canvas.position(x, y);
+    this.canvas.position(this.canvasX, this.canvasY);
 
     this.currentLevel = CONSTANTS.INITIAL_LEVEL;
 
-    this.scoreManager = new ScoreManager(this.canvasWidth, this.canvasHeight, this.SCORE_AREA_HEIGHT, p5);
+    this.scoreManager = new ScoreManager(this.gameAreaData, this.canvasWidth, this.canvasHeight, this.SCORE_AREA_HEIGHT, p5);
 
     // Generate game objects
     const {
@@ -52,6 +64,7 @@ export class GameScreen {
     this.isLoadingNextLevel = false;
     this.lives = CONSTANTS.PLAYER_INITIAL_LIVES;
     this.isOnMenu = true;
+    this.isLevelStarted = false;
 
     this.powerUps = [];
 
@@ -89,8 +102,26 @@ export class GameScreen {
     this.scoreManager.draw();
     this.handleMultipleBalls();
     this.handlePowerUps();
+    this.drawButtons();
+    this.drawHelpMessage();
   
     this.handleEndGame();
+  }
+
+  drawButtons() {
+    this.p5.push();
+    this.p5.fill(60, 60, 60);
+    this.layoutManager.getButtons().forEach(btn => {
+      this.p5.rect(btn.x, btn.y, btn.width, btn.height);
+    });
+    this.p5.pop();
+  }
+
+  drawHelpMessage() {
+    if (this.isLevelStarted) return;
+    this.displayCenteredText({
+      message: TEXT_LABELS.START_LEVEL_HELP,
+    });
   }
 
   generateMenu() {
@@ -119,7 +150,7 @@ export class GameScreen {
     const numOfBalls = this.balls.length;
     if (numOfBalls === 0) {
       if (this.lives < 1) {
-        this.displayCenteredText(TEXT_LABELS.GAME_OVER);
+        this.displayCenteredText({ message: TEXT_LABELS.GAME_OVER });
         this.scoreManager.saveHighestScore(this.scoreManager.getScore());
         this.scoreManager.score = 0;
       } else {
@@ -132,28 +163,69 @@ export class GameScreen {
     }
   }
 
-  handleKeyPressed() {
-    if (this.p5.keyIsPressed) {
-      this.player.controlInputs(this.p5.keyCode);
-      this.balls.forEach(ball => ball.handleKeyPressed(this.p5.keyCode));
-    }
-  }
+  handleKeyPressed(key) {
+    const input = key ? key : this.p5.keyCode;
+    if (this.p5.keyIsPressed || this.p5.mouseIsPressed) {
+      this.player.controlInputs(input);
 
-  handleMultipleBalls() {
-    this.balls = this.balls.filter(b => !b.isBelowScreen());
-    this.p5.text(`Balls: ${this.balls.length}`, 10, this.canvasHeight - 130);
+      // 32 -> Spacebar
+      if (input === 32) {
+        this.balls.forEach(ball => ball.handleKeyPressed(input));
+        this.isLevelStarted = true;
+      }
+    }
   }
 
   handleKeyReleased() {
     this.player.keyReleased();
   }
 
-  displayCenteredText(message = 'Debug message') {
+  handleTouchStarted() {
+    if (this.isOnMenu) return;
+    const mouseX = this.p5.mouseX;
+    const mouseY = this.p5.mouseY;
+
+    this.layoutManager.getButtons().forEach(btn => btn.click({ mouseX, mouseY }));
+    if (this.isLevelStarted) return;
+    if (this.isClickOnGameArea({ mouseX, mouseY })) {
+      this.balls.forEach(ball => ball.stopFollowPlayer());
+      this.isLevelStarted = true;
+    }
+  }
+
+  handleTouchReleased() {
+    this.layoutManager.getButtons().forEach(btn => btn.clickReleased());
+  }
+
+  handleMultipleBalls() {
+    this.balls = this.balls.filter(b => !b.isBelowScreen());
+  }
+
+  isClickOnGameArea({ mouseX, mouseY }) {
+    const isClickOnGameAreaX = mouseX >= this.CANVAS_GAME_AREA_X && mouseX <= this.CANVAS_GAME_AREA_END_X;
+    const isClickOnGameAreaY = mouseY >= this.CANVAS_GAME_AREA_Y && mouseY <= this.CANVAS_GAME_AREA_END_Y;
+    return isClickOnGameAreaX && isClickOnGameAreaY;
+  }
+
+  displayCenteredText({
+    message = 'Debug message',
+    wrapStyle,
+    boxWidth = this.CANVAS_GAME_AREA_WIDTH,
+    boxHeight = this.CANVAS_GAME_AREA_WIDTH,
+  }) {
     this.p5.push();
+    if (wrapStyle) {
+      this.p5.textWrap(wrapStyle);
+    }
     this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
+    this.p5.rectMode(this.p5.CORNERS);
     this.p5.textSize(20);
     this.p5.fill(255);
-    this.p5.text(message, this.canvasWidth / 2, this.canvasHeight / 2);
+    if (this.layoutManager.getCurrentLayoutType === LAYOUT_TYPES.VERTICAL) {
+      this.p5.text(message, 0, 0, boxWidth, boxHeight);
+    } else {
+      this.p5.text(message, this.CANVAS_GAME_AREA_X, 0, boxWidth, boxHeight);
+    }
     this.p5.pop();
   }
 
@@ -164,14 +236,14 @@ export class GameScreen {
   startNextLevelLoad({ resetCurrentLevel = false }) {
     const isGameFinished = this.currentLevel >= LEVELS.length;
     if (isGameFinished) {
-      this.displayCenteredText(TEXT_LABELS.GAME_CLEARED);
+      this.displayCenteredText({ message: TEXT_LABELS.GAME_CLEARED });
       return;
     }
     if (this.isLoadingNextLevel && !resetCurrentLevel) {
-      this.displayCenteredText(TEXT_LABELS.STAGE_CLEAR(this.currentLevel));
+      this.displayCenteredText({ message: TEXT_LABELS.STAGE_CLEAR(this.currentLevel) });
       return;
     } else if (this.isLoadingNextLevel && resetCurrentLevel) {
-      this.displayCenteredText(TEXT_LABELS.LIVE_LOST(this.lives));
+      this.displayCenteredText({ message: TEXT_LABELS.LIVE_LOST(this.lives) });
       return;
     }
     if (!isGameFinished && !resetCurrentLevel) {
@@ -219,6 +291,7 @@ export class GameScreen {
       }
 
       this.isLoadingNextLevel = false;
+      this.isLevelStarted = false;
     }, 3500);
   }
 
@@ -230,19 +303,20 @@ export class GameScreen {
    */
   generateLevel({ structure, canvasWidth }) {
     const blocks = [];
-    const blocksHeight = 30;
+    const blocksHeight = this.gameAreaData.width * CONSTANTS.BLOCK_HEIGHT;
     const blocksMargin = 0;
 
     let levelRow = structure[0];
-    let blockX = blocksMargin;
+    let blockX = blocksMargin + this.CANVAS_GAME_AREA_X;
+    const gameAreaWidth = this.gameAreaData.width;
     // Los bloques comienzan a dibujarse en el area de juego
     let blockY = blocksMargin + this.CANVAS_GAME_AREA_Y;
     for (let i = 0; i < structure.length; i++) {
       levelRow = structure[i];
-      blockX = blocksMargin;
+      blockX = blocksMargin + this.CANVAS_GAME_AREA_X;
       // El ancho de los bloques puede variar de acuerdo al número
       // de bloques en la fila
-      const blocksWidth = canvasWidth / levelRow.length;
+      const blocksWidth = gameAreaWidth / levelRow.length;
       for (let j = 0; j < levelRow.length; j++) {
         const blockType = levelRow[j];
         const newBlock = new Block(
@@ -274,6 +348,7 @@ export class GameScreen {
     });
 
     const newPlayer = new Player(
+      this.gameAreaData,
       this.canvasWidth,
       this.canvasHeight,
       this.canvasX,
@@ -282,6 +357,7 @@ export class GameScreen {
     );
 
     const newBall = new Ball(
+      this.gameAreaData,
       this.canvasWidth,
       this.canvasHeight,
       this.canvasX,
@@ -336,7 +412,7 @@ export class GameScreen {
     const leftBorder = new Collisionable({
       width: 10,
       height: this.canvasHeight,
-      x: -10,
+      x: this.CANVAS_GAME_AREA_X - 10,
       y: 0,
       type: 'LeftBorder',
     });
@@ -344,7 +420,7 @@ export class GameScreen {
     const rightBorder = new Collisionable({
       width: 10,
       height: this.canvasHeight,
-      x: this.canvasWidth,
+      x: this.CANVAS_GAME_AREA_X + this.CANVAS_GAME_AREA_WIDTH,
       y: 0,
       type: 'RightBorder',
     });
@@ -353,7 +429,7 @@ export class GameScreen {
       width: this.canvasWidth,
       height: 10,
       x: 0,
-      y: -10 + this.CANVAS_GAME_AREA_Y,
+      y: this.CANVAS_GAME_AREA_Y - 10,
       type: 'TopBorder',
     });
 
@@ -407,7 +483,6 @@ export class GameScreen {
 
   handlePowerUps() {
     this.powerUps = this.powerUps.filter(p => !p.isBelowScreen());
-    this.p5.text(`Power ups: ${this.powerUps.length}`, 10, this.canvasHeight - 115);
   }
 
   /******************************************************
@@ -418,6 +493,7 @@ export class GameScreen {
       const currentBall = this.balls[0];
 
       const newBall = new Ball(
+        this.gameAreaData,
         this.canvasWidth,
         this.canvasHeight,
         this.canvasX,

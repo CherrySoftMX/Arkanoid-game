@@ -28,6 +28,11 @@ A simple Brick Breaker clone made with p5.js
 - [x] Bricks collision feedback animation
 - [x] Ball movement acceleration and deceleration system
 - [x] Power Ups
+- [x] Mobile / Touch screen support
+- [x] Sprites proportional to window size
+- [ ] Ball movement speed proportional to window size
+- [ ] Player movement speed proportional to window size
+- [ ] Touch screen buttons design
 - [ ] Movable bricks
 - [ ] Improve player sprite
 - [ ] Improve bricks sprites

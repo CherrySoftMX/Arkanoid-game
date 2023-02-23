@@ -1,6 +1,7 @@
 export class ScoreManager {
-  constructor(canvasWidth, canvasHeight, scoreAreaHeight, p5) {
+  constructor(gameAreaData, canvasWidth, canvasHeight, scoreAreaHeight, p5) {
     this.p5 = p5;
+    this.gameAreaData = gameAreaData;
 
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
@@ -27,7 +28,7 @@ export class ScoreManager {
     this.p5.textAlign(this.p5.LEFT, this.p5.CENTER);
     this.p5.text(
       'Score: ' + this.formatNumber(this.getScore(), 5),
-      20,
+      this.gameAreaData.x + 20,
       this.scoreAreaHeight / 2,
     );
     this.p5.text(
