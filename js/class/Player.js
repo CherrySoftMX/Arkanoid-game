@@ -3,34 +3,32 @@ import { calculateCoordsToCenterItem } from '../utils/utils.js';
 
 export class Player {
   
-  constructor(gameAreaData, canvasWidth, canvasHeight, canvasX, canvasY, p5) {
+  constructor({ p5, gameAreaWidth, gameAreaX, gameAreaY }) {
     this.p5 = p5;
 
-    this.gameAreaData = gameAreaData;
-
-    this.width = Math.ceil(gameAreaData.width * 0.2);
+    this.width = Math.ceil(gameAreaWidth * 0.2);
     // Alrededor de 20px para 1920 * 1080
-    this.height = gameAreaData.width * CONSTANTS.PLAYER_HEIGHT;
+    this.height = gameAreaWidth * CONSTANTS.PLAYER_HEIGHT;
 
     this.container = {
-      width: this.gameAreaData.width,
-      height: this.gameAreaData.width,
-      x: this.gameAreaData.x,
-      y: this.gameAreaData.y,
+      width: gameAreaWidth,
+      height: gameAreaWidth,
+      x: gameAreaX,
+      y: gameAreaY,
     };
 
     const { x } = calculateCoordsToCenterItem({
-      windowWidth: this.gameAreaData.width,
-      windowHeight: this.gameAreaData.width,
+      windowWidth: gameAreaWidth,
+      windowHeight: gameAreaWidth,
       objectHeight: this.height,
       objectWidth: this.width,
-      relativeToX: gameAreaData.x,
-      relativeToY: gameAreaData.y,
+      relativeToX: gameAreaX,
+      relativeToY: gameAreaY,
     });
 
     this.x = x;
-    this.y = this.gameAreaData.y + this.gameAreaData.width - this.height - 10;
-    this.speed = (gameAreaData.width * CONSTANTS.PLAYER_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
+    this.y = gameAreaY + gameAreaWidth - this.height - 10;
+    this.speed = (gameAreaWidth * CONSTANTS.PLAYER_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
 
     this.isDestroyed = false;
 

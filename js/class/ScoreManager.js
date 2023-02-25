@@ -1,10 +1,10 @@
 export class ScoreManager {
-  constructor(gameAreaData, canvasWidth, canvasHeight, scoreAreaHeight, p5) {
+  constructor({ gameAreaX, gameAreaY, gameAreaWidth, scoreAreaHeight, p5 }) {
     this.p5 = p5;
-    this.gameAreaData = gameAreaData;
+    this.gameAreaX = gameAreaX;
+    this.gameAreaY = gameAreaY;
+    this.gameAreaWidth = gameAreaWidth;
 
-    this.canvasWidth = canvasWidth;
-    this.canvasHeight = canvasHeight;
     this.scoreAreaHeight = scoreAreaHeight;
 
     this.score = 0
@@ -21,19 +21,19 @@ export class ScoreManager {
 
   draw() {
     this.p5.fill(94, 92, 92);
-    this.p5.rect(0, 0, this.canvasWidth, this.scoreAreaHeight);
+    this.p5.rect(this.gameAreaX, this.gameAreaY, this.gameAreaWidth, this.scoreAreaHeight);
 
     this.p5.fill(255);
     this.p5.textSize(12);
     this.p5.textAlign(this.p5.LEFT, this.p5.CENTER);
     this.p5.text(
       'Score: ' + this.formatNumber(this.getScore(), 5),
-      this.gameAreaData.x + 20,
+      this.gameAreaX + 20,
       this.scoreAreaHeight / 2,
     );
     this.p5.text(
       'Highest Score: ' + this.formatNumber(this.highestScore, 5),
-      (this.canvasWidth / 2) + 20,
+      (this.gameAreaWidth / 2) + this.gameAreaX + 20,
       this.scoreAreaHeight / 2,
     );
   }

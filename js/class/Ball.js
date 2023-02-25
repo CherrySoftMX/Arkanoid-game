@@ -2,27 +2,29 @@ import { calculateCoordsToCenterItem, getRandomNum } from '../utils/utils.js';
 import { CONSTANTS } from '../constants/constants.js';
 
 export class Ball {
-  constructor(gameAreaData, canvasWidth, canvasHeight, canvasX, canvasY, player, p5) {
-    this.p5 = p5;
-    this.gameAreaData = gameAreaData;
+  constructor({
+    gameAreaWidth,
+    gameAreaX,
+    gameAreaY,
+    player,
+    p5,
+  }) {
 
-    this.width = gameAreaData.width * CONSTANTS.BALL_WIDTH;
+    this.p5 = p5;
+    this.gameAreaWidth = gameAreaWidth;
+    this.gameAreaX = gameAreaX;
+    this.gameAreaY = gameAreaY;
+
+    this.width = gameAreaWidth * CONSTANTS.BALL_WIDTH;
     this.height = this.width;
 
-    this.container = {
-      width: canvasWidth,
-      height: canvasHeight,
-      x: canvasX,
-      y: canvasY,
-    };
-
     const { x, y } = calculateCoordsToCenterItem({
-      windowWidth: canvasWidth,
-      windowHeight: canvasHeight,
+      windowWidth: gameAreaWidth,
+      windowHeight: gameAreaWidth,
       objectWidth: this.width,
       objectHeight: this.height,
-      relativeToX: this.gameAreaData.x,
-      relativeToY: this.gameAreaData.y,
+      relativeToX: this.gameAreaX,
+      relativeToY: this.gameAreaY,
     });
     
 
@@ -32,8 +34,8 @@ export class Ball {
       para la resolución actual con regla de 3 tomando las refencias para
       la altura que ya fue probada.
     */
-    this.baseSpeed = (gameAreaData.width * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
-    this.speed = (gameAreaData.width * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
+    this.baseSpeed = (gameAreaWidth * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
+    this.speed = (gameAreaWidth * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
 
     this.playerReference = player;
 
@@ -110,7 +112,7 @@ export class Ball {
   }
 
   isBelowScreen() {
-    this.isOutOfField = this.pos.y - this.height >= this.gameAreaData.y + this.gameAreaData.width;
+    this.isOutOfField = this.pos.y - this.height >= this.gameAreaY + this.gameAreaWidth;
     return this.isOutOfField;
   }
 
