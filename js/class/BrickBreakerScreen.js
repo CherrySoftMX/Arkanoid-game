@@ -1,4 +1,4 @@
-import { GameArea } from './GameArea.js';
+import { GameArea } from '../core/GameArea.js';
 import { CONSTANTS, BLOCK_TYPES } from '../constants/constants.js';
 import { LEVELS } from '../constants/levels.js';
 import { TEXT_LABELS } from '../constants/strings.js';
