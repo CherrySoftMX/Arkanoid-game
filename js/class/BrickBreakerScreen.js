@@ -258,9 +258,10 @@ export class BrickBreakerScreen extends GameArea {
           x,
           y,
           p5,
-          canvasHeight,
+          type: 'PowerUp',
           callback: this.powerUpMultipleBalls.bind(this, 2),
         });
+        powerUp.setScreenLayoutManager(this.layoutManager);
 
         powerUp.addCollisionObject(this.player);
         powerUp.addObserver(this);

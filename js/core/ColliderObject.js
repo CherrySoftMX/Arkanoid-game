@@ -1,4 +1,4 @@
-import { Collisionable } from './Collisionable';
+import { Collisionable } from './Collisionable.js';
 
 export class ColliderObject extends Collisionable {
   constructor({ colliderType = 'RECT', ...rest }) {
