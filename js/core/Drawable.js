@@ -4,6 +4,9 @@ export class Drawable {
     this.pos = p5.createVector(x, y);
     this.width = width;
     this.height = height;
+
+    this.screenLayoutManager = null;
+    this.isOutOfField = false;
   }
 
   /**
@@ -12,6 +15,12 @@ export class Drawable {
    * the object.
    */
   draw() { }
+
+  /**
+   * Should be implemented.
+   * Here you can put all the code you need to handle updates.
+   */
+  update() { }
 
   getX() {
     return this.pos.x;
@@ -40,6 +49,24 @@ export class Drawable {
       ...this.getCoords(),
       ...this.getData(),
     };
+  }
+
+  setPositionVector(vector) {
+    this.pos = vector;
+  }
+
+  getPositionVector() {
+    return this.pos.copy();
+  }
+
+  setScreenLayoutManager(obj) {
+    this.screenLayoutManager = obj;
+  }
+
+  isBelowScreen() {
+    const screenData = this.screenLayoutManager.getGameScreenData();
+    this.isOutOfField = this.pos.y - this.height >= screenData.y + screenData.width;
+    return this.isOutOfField;
   }
 
 }
