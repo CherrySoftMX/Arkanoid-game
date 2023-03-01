@@ -2,7 +2,7 @@ import { CANVAS_SETTINGS, BUTTON_TYPES } from '../constants/constants.js';
 import { calculateCoordsToCenterItem } from '../utils/utils.js';
 import { TEXT_LABELS } from '../constants/strings.js';
 import { ScreenLayoutManager } from './ScreenLayoutManager.js';
-import { BrickBreakerScreen } from './BrickBreakerScreen.js';
+import { BrickBreakerScreen } from '../class/BrickBreakerScreen.js';
 
 export class GameScreen {
   
