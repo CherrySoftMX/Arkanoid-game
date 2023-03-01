@@ -6,6 +6,7 @@ import { Block } from './Block.js';
 import { Player } from './Player.js';
 import { Ball } from './Ball.js';
 import { PowerUp } from './PowerUp.js';
+import { calculateCoordsToCenterItem } from '../utils/utils.js';
 
 
 export class BrickBreakerScreen extends GameArea {
@@ -138,12 +139,30 @@ export class BrickBreakerScreen extends GameArea {
       structure: levels[levelNum],
     });
 
+    // Calculate player attributes
+    const playerWidth = Math.ceil(this.width * 0.2);
+    const playerHeight = this.width * CONSTANTS.PLAYER_HEIGHT;
+
+    const { x: playerX } = calculateCoordsToCenterItem({
+      windowWidth: this.width,
+      windowHeight: this.width,
+      objectHeight: playerHeight,
+      objectWidth: playerWidth,
+      relativeToX: this.x,
+      relativeToY: this.y,
+    });
+    const playerY = this.y + this.width - playerHeight - 10;
+
     const newPlayer = new Player({
       p5: this.p5,
-      gameAreaWidth: this.width,
-      gameAreaX: this.x,
-      gameAreaY: this.y,
+      x: playerX,
+      y: playerY,
+      width: playerWidth,
+      height: playerHeight,
+      type: 'Player',
     });
+    newPlayer.setScreenLayoutManager(this.layoutManager);
+    newPlayer.configure();
 
     const newBall = new Ball({
       p5: this.p5,
@@ -252,7 +271,6 @@ export class BrickBreakerScreen extends GameArea {
     switch (type) {
       case 'Block':
         const p5 = this.p5;
-        const canvasHeight = this.canvasHeight;
 
         const powerUp = new PowerUp({
           x,
