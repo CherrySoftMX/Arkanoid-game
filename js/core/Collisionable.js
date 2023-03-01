@@ -1,4 +1,4 @@
-import { Drawable } from './Drawable';
+import { Drawable } from './Drawable.js';
 
 export class Collisionable extends Drawable {
   constructor({ type = 'Generic', ...rest }) {
@@ -42,6 +42,10 @@ export class Collisionable extends Drawable {
 
   disableCollisions() {
     this.isCollisionActive = false;
+  }
+
+  enableCollisions() {
+    this.isCollisionActive = true;
   }
 
   isCollisionable() {

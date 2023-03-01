@@ -229,6 +229,7 @@ export class GameArea {
       x: this.x - 10,
       y: this.y,
       type: 'LeftBorder',
+      p5: this.p5,
     });
 
     const rightBorder = new Collisionable({
@@ -237,6 +238,7 @@ export class GameArea {
       x: this.x + this.width,
       y: this.y,
       type: 'RightBorder',
+      p5: this.p5,
     });
 
     const topBorder = new Collisionable({
@@ -245,6 +247,7 @@ export class GameArea {
       x: this.x,
       y: this.CANVAS_GAME_AREA_Y_START - 10,
       type: 'TopBorder',
+      p5: this.p5,
     });
 
     return {

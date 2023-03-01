@@ -1,27 +1,15 @@
 import { BLOCK_TYPES } from '../constants/constants.js';
+import { Collisionable } from '../core/Collisionable.js';
 
-export class Block {
+export class Block extends Collisionable {
 
-  constructor(width, height, x, y, score = 100, durability = 1, blockType = '_', p5) {
-    this.p5 = p5;
-
-    this.width = width;
-    this.height = height;
-    this.x = x;
-    this.y = y;
+  constructor({ score = 100, durability = 1, blockType = '_', ...rest }) {
+    super({ ...rest });
     this.scoreValue = score;
-
-    this.isDestroyed = false;
-
     this.observers = [];
-
     this.durability = durability;
     this.blockType = blockType;
-
-    this.type = 'Block';
-
     this.isTransitioning = false;
-    this.isCollisionActive = true;
   }
 
   draw() {
@@ -32,7 +20,7 @@ export class Block {
       this.p5.fill('#FEFEFE');
     }
     this.p5.strokeWeight(1);
-    this.p5.rect(this.x, this.y, this.width, this.height);
+    this.p5.rect(this.pos.x, this.pos.y, this.width, this.height);
   }
 
   onCollision() {
@@ -55,62 +43,21 @@ export class Block {
     }, 30);
   }
 
-  destroy() {
-    this.isDestroyed = true;
-  }
-
-  isActive() {
-    return !this.isDestroyed;
-  }
-
-  getCoords() {
-    return {
-      x: this.x,
-      y: this.y,
-    };
-  }
-
-  getData() {
-    return {
-      width: this.width,
-      height: this.height,
-    };
-  }
-
-  getCompleteData() {
-    const { x, y } = this.getCoords();
-    const { width, height } = this.getData();
-    const scoreValue = this.scoreValue;
-    return { x, y, width, height, scoreValue, type: this.type };
-  }
-
   addObserver(obj) {
     this.observers.push(obj);
   }
 
   notifyAll() {
     const blockData = this.getCompleteData();
-    this.observers.forEach(obj => obj.update(blockData));
-  }
-
-  getType() {
-    return this.type;
+    this.observers.forEach(obj => obj.update({
+      ...blockData,
+      scoreValue: this.scoreValue,
+      type: this.type,
+    }));
   }
 
   getBlockType() {
     return this.blockType;
-  }
-
-  disableCollisions() {
-    this.isCollisionActive = false;
-  }
-
-  enableCollisions() {
-    this.isCollisionActive = true;
-  }
-
-  isCollisionable() {
-    return this.isCollisionActive;
   }
 
 }

@@ -203,16 +203,17 @@ export class BrickBreakerScreen extends GameArea {
       const blocksWidth = gameAreaWidth / levelRow.length;
       for (let j = 0; j < levelRow.length; j++) {
         const blockType = levelRow[j];
-        const newBlock = new Block(
-          blocksWidth,
-          blocksHeight,
-          blockX,
-          blockY,
-          BLOCK_TYPES[blockType].score,
-          BLOCK_TYPES[blockType].durability,
+        const newBlock = new Block({
+          type: 'Block',
+          width: blocksWidth,
+          height: blocksHeight,
+          x: blockX,
+          y: blockY,
+          score: BLOCK_TYPES[blockType].score,
+          durability: BLOCK_TYPES[blockType].durability,
           blockType,
-          this.p5,
-        );
+          p5: this.p5,
+        });
         if (levelRow[j] === '*') {
           newBlock.destroy();
         }
@@ -246,6 +247,8 @@ export class BrickBreakerScreen extends GameArea {
   }
 
   update({ x, y, type = 'Unknown' }) {
+    console.log('Notificacion a screen');
+    console.log(type);
     switch (type) {
       case 'Block':
         const p5 = this.p5;
