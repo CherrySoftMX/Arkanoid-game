@@ -1,60 +1,31 @@
 import { calculateCoordsToCenterItem, getRandomNum } from '../utils/utils.js';
 import { CONSTANTS } from '../constants/constants.js';
+import { ColliderObject } from '../core/ColliderObject.js';
 
-export class Ball {
+export class Ball extends ColliderObject {
   constructor({
-    gameAreaWidth,
-    gameAreaX,
-    gameAreaY,
-    player,
-    p5,
+    type = 'Ball',
+    colliderType = 'CIRCLE',
+    ...rest
   }) {
-
-    this.p5 = p5;
-    this.gameAreaWidth = gameAreaWidth;
-    this.gameAreaX = gameAreaX;
-    this.gameAreaY = gameAreaY;
-
-    this.width = gameAreaWidth * CONSTANTS.BALL_WIDTH;
-    this.height = this.width;
-
-    const { x, y } = calculateCoordsToCenterItem({
-      windowWidth: gameAreaWidth,
-      windowHeight: gameAreaWidth,
-      objectWidth: this.width,
-      objectHeight: this.height,
-      relativeToX: this.gameAreaX,
-      relativeToY: this.gameAreaY,
-    });
-    
+    super({ type, colliderType, ...rest });
 
     /*
       La velocidad ideal para {GAME_AREA_HEIGHT_REFERENCE}px de alto
       es de {BALL_SPEED}px por frame, por lo que se calcula la velocidad
       para la resolución actual con regla de 3 tomando las refencias para
       la altura que ya fue probada.
+
+      speed = (gameArea.width * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
     */
-    this.baseSpeed = (gameAreaWidth * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
-    this.speed = (gameAreaWidth * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
+    this.baseSpeed = 0;
+    this.speed = 0;
 
-    this.playerReference = player;
+    this.playerReference = null;
 
-    this.isOutOfField = false;
-
-    const possibleAngles = [45, 135, 225, 315];
-    const randomNum = getRandomNum(0, 4);
-    this.angle = possibleAngles[randomNum];
-
-    this.isDestroyed = false;
-
-    this.collisionObjects = [];
-
-    this.pos = p5.createVector(x, y);
-    this.vel = p5.createVector(this.speed, -this.speed);
+    this.vel = this.p5.createVector(this.speed, this.speed);
 
     this.isFollowingPlayer = false;
-
-    this.type = 'Ball';
   }
 
   draw() {
@@ -73,6 +44,12 @@ export class Ball {
     this.pos.add(this.vel);
     this.detectCollisions();
     this.handleAcceleration();
+  }
+
+  configure() {
+    const gameArea = this.screenLayoutManager.getGameScreenData();
+    this.baseSpeed = (gameArea.width * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
+    this.speed = (gameArea.width * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
   }
 
   handleAcceleration() {
@@ -109,61 +86,6 @@ export class Ball {
         }
       }
     }
-  }
-
-  isBelowScreen() {
-    this.isOutOfField = this.pos.y - this.height >= this.gameAreaY + this.gameAreaWidth;
-    return this.isOutOfField;
-  }
-
-  isActive() {
-    return !this.isDestroyed;
-  }
-
-  destroy() {
-    this.isDestroyed = true;
-  }
-
-  detectCollisions() {
-    this.collisionObjects.forEach(obj => {
-      if (obj.isActive() && obj.isCollisionable()) {
-        const { x, y } = obj.getCoords();
-        const { width, height } = obj.getData();
-        if (this.iAmColliding({ x, y, width, height })) {
-          obj.onCollision({ type: this.type });
-          this.onCollision({ ...obj, x, y });
-          return;
-        }
-      }
-    });
-  }
-
-  /**
-   * Calcula si el objeto actual (this) se encuentra colisionando con otro objeto.
-   * 
-   * Este sistema de colisiones simple funciona al calcular si las coordenadas de (this)
-   * se encuentran dentro de las coordenadas del otro objeto.
-   * 
-   * El objeto a comprobar colision debe ser un rectangulo.
-   *
-   * @param x - La coordenada x del objeto a comprobar colision.
-   * @param y - La coordenada y del objeto a comprobar colision.
-   * @param width - El ancho del objeto a comprobar colision.
-   * @param height - El ancho del objeto a comprobar colision.  
-   * @returns - Un booleano que indica si el objeto (this) esta colisionando con el objeto de los parametros.
-   */
-  iAmColliding({ x, y, width, height }) {
-    const myX = this.pos.x;
-    const myY = this.pos.y;
-
-    const verticalDistance = Math.floor((y + (height / 2)) - myY );
-    // Valor absoluto de la distancia vertical
-    const fixedVerticalDistance = verticalDistance < 0 ? verticalDistance * (-1) : verticalDistance;
-    const isVerticalCollision = fixedVerticalDistance < ((this.height / 2) + (height / 2));
-    const isHorizontalCollision = myX + (this.width / 2) >= x && (myX - this.width / 2) <= (x + width);
-
-    const isCollision = isVerticalCollision && isHorizontalCollision;
-    return isCollision;
   }
 
   onCollision({ type, x, y, width, height }) {
@@ -206,10 +128,10 @@ export class Ball {
   }
 
   handleBlockCollision({ x, y, width, height, acceleration }) {
-    const isLeftSideHit = this.iAmColliding({ x, y, width: 1, height });
-    const isRightSideHit = this.iAmColliding({ x: x + width, y, width: 1, height });
-    const isTopSideHit = this.iAmColliding({ x, y, width, height: 1 });
-    const isBottomSideHit = this.iAmColliding({ x, y: y + height, width, height: 1 });
+    const isLeftSideHit = this.iAmCollidingCircleToRect({ x, y, width: 1, height });
+    const isRightSideHit = this.iAmCollidingCircleToRect({ x: x + width, y, width: 1, height });
+    const isTopSideHit = this.iAmCollidingCircleToRect({ x, y, width, height: 1 });
+    const isBottomSideHit = this.iAmCollidingCircleToRect({ x, y: y + height, width, height: 1 });
 
     const ballX = this.pos.x;
     const ballY = this.pos.y;
@@ -282,20 +204,8 @@ export class Ball {
     this.playerReference = player;
   }
 
-  addCollisionObject(obj) {
-    this.collisionObjects.push(obj);
-  }
-
   increaseSpeed(increase) {
     this.speed += increase;
-  }
-
-  setPositionVector(vector) {
-    this.pos = vector;
-  }
-
-  getPositionVector() {
-    return this.pos.copy();
   }
 
   getSpeedVector() {
@@ -306,10 +216,6 @@ export class Ball {
     const previousSpeed = this.vel.copy();
     this.vel = vector;
     this.pos.sub(previousSpeed);
-  }
-
-  getCollisionObjects() {
-    return this.collisionObjects;
   }
 
 }

@@ -164,13 +164,20 @@ export class BrickBreakerScreen extends GameArea {
     newPlayer.setScreenLayoutManager(this.layoutManager);
     newPlayer.configure();
 
+    // Calculate ball atributes
+    const ballWidth = this.width * CONSTANTS.BALL_WIDTH;
+    const ballHeight = ballWidth;
+
     const newBall = new Ball({
+      x: 0,
+      y: 0,
+      width: ballWidth,
+      height: ballHeight,
+      type: 'Ball',
       p5: this.p5,
-      gameAreaWidth: this.width,
-      gameAreaX: this.x,
-      gameAreaY: this.y,
-      player: newPlayer,
     });
+    newBall.setScreenLayoutManager(this.layoutManager);
+    newBall.configure();
     newBall.followPlayer(newPlayer);
 
     const {
@@ -299,20 +306,26 @@ export class BrickBreakerScreen extends GameArea {
     for (let i = 0; i < num; i++) {
       const currentBall = this.balls[0];
 
-      const newBall = new Ball({
-        p5: this.p5,
-        gameAreaWidth: this.width,
-        gameAreaX: this.x,
-        gameAreaY: this.y,
-        player: this.player,
-      });
+      // Calculate ball atributes
+      const ballWidth = this.width * CONSTANTS.BALL_WIDTH;
+      const ballHeight = ballWidth;
+      const { x, y } = currentBall.getPositionVector();
 
-      const posCurrentBall = currentBall.getPositionVector();
+      const newBall = new Ball({
+        x,
+        y,
+        width: ballWidth,
+        height: ballHeight,
+        type: 'Ball',
+        p5: this.p5,
+      });
+      newBall.setScreenLayoutManager(this.layoutManager);
+      newBall.configure();
+
       let speedCurrentBall = currentBall.getSpeedVector();
       speedCurrentBall.x *= -1;
       speedCurrentBall.y *= i % 2 === 0 ? -1 : 1;
 
-      newBall.setPositionVector(posCurrentBall);
       newBall.setSpeedVector(speedCurrentBall);
 
       this.loadCollisions({
