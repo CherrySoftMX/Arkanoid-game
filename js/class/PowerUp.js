@@ -1,5 +1,5 @@
 import { CONSTANTS } from '../constants/constants.js';
-import { Collisionable } from './Collisionable.js';
+import { Collisionable } from '../core/Collisionable.js';
 
 // ToDo: Extract common methods between classes
 export class PowerUp extends Collisionable {

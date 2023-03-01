@@ -1,6 +1,6 @@
 import { CONSTANTS, LAYOUT_TYPES, CANVAS_SETTINGS } from '../constants/constants.js';
-import { ScoreManager } from '../class/ScoreManager.js';
-import { Collisionable } from '../class/Collisionable.js';
+import { ScoreManager } from './ScoreManager.js';
+import { Collisionable } from './Collisionable.js';
 import { TEXT_LABELS } from '../constants/strings.js';
 
 /**
