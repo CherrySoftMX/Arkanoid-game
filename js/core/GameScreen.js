@@ -10,7 +10,7 @@ export class GameScreen {
     this.p5 = p5;
 
     this.layoutManager = new ScreenLayoutManager();
-    this.layoutManager.calculateLayout();
+    this.layoutManager.calculateLayout({ p5 });
 
     // Simular que se presionan las flechas del teclado cuando
     // se presionan los botones en pantalla
@@ -73,7 +73,8 @@ export class GameScreen {
     this.p5.push();
     this.p5.fill(60, 60, 60);
     this.layoutManager.getButtons().forEach(btn => {
-      this.p5.rect(btn.x, btn.y, btn.width, btn.height);
+      const { x, y, width, height } = btn.getCompleteData();
+      this.p5.rect(x, y, width, height);
     });
     this.p5.pop();
   }

@@ -18,7 +18,7 @@ export class ScreenLayoutManager {
     };
   }
 
-  calculateLayout() {
+  calculateLayout({ p5 }) {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
@@ -41,6 +41,7 @@ export class ScreenLayoutManager {
         width: btnWidth,
         height: btnHeight,
         type: BUTTON_TYPES.LEFT,
+        p5,
       });
 
       const btnRight = new GameButton({
@@ -49,6 +50,7 @@ export class ScreenLayoutManager {
         width: btnWidth,
         height: btnHeight,
         type: BUTTON_TYPES.RIGHT,
+        p5,
       });
 
       this.layoutData = {
@@ -65,6 +67,7 @@ export class ScreenLayoutManager {
         width: btnWidth,
         height: btnHeight,
         type: BUTTON_TYPES.LEFT,
+        p5,
       });
 
       const btnRightX = this.gameScreenData.width + btnWidth;
@@ -74,6 +77,7 @@ export class ScreenLayoutManager {
         width: btnWidth,
         height: btnHeight,
         type: BUTTON_TYPES.RIGHT,
+        p5,
       });
 
       const gameScreenNewX = btnWidth;

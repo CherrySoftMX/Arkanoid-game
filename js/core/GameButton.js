@@ -1,10 +1,9 @@
-export class GameButton {
+import { Drawable } from './Drawable.js';
 
-  constructor({ x, y, width, height, type }) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+export class GameButton extends Drawable {
+
+  constructor({ x, y, width, height, type, p5 }) {
+    super({ x, y, width, height, p5 });
     this.type = type;
     this.imClicked = false;
     this.onClick = () => console.log(`Btn ${type} clicked`);
@@ -35,8 +34,9 @@ export class GameButton {
   }
 
   imBeingClicked({ mouseX, mouseY }) {
-    const isMouseInsideHorizontally = mouseX >= this.x && mouseX <= this.x + this.width;
-    const isMouseInsideVertically = mouseY >= this.y && mouseY <= this.y + this.height;
+    const { x, y, width, height } = this.getCompleteData();
+    const isMouseInsideHorizontally = mouseX >= x && mouseX <= x + width;
+    const isMouseInsideVertically = mouseY >= y && mouseY <= y + height;
     return isMouseInsideHorizontally && isMouseInsideVertically;
   }
 
