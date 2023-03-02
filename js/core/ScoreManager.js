@@ -1,12 +1,8 @@
-export class ScoreManager {
-  constructor({ gameAreaX, gameAreaY, gameAreaWidth, scoreAreaHeight, p5 }) {
-    this.p5 = p5;
-    this.gameAreaX = gameAreaX;
-    this.gameAreaY = gameAreaY;
-    this.gameAreaWidth = gameAreaWidth;
+import { Drawable } from './Drawable.js';
 
-    this.scoreAreaHeight = scoreAreaHeight;
-
+export class ScoreManager extends Drawable {
+  constructor({ x, y, width, height, p5 }) {
+    super({ x, y, width, height, p5 });
     this.score = 0
     this.highestScore = this.getHighestScore();
   }
@@ -21,20 +17,20 @@ export class ScoreManager {
 
   draw() {
     this.p5.fill(94, 92, 92);
-    this.p5.rect(this.gameAreaX, this.gameAreaY, this.gameAreaWidth, this.scoreAreaHeight);
+    this.p5.rect(this.pos.x, this.pos.y, this.width, this.height);
 
     this.p5.fill(255);
     this.p5.textSize(12);
     this.p5.textAlign(this.p5.LEFT, this.p5.CENTER);
     this.p5.text(
       'Score: ' + this.formatNumber(this.getScore(), 5),
-      this.gameAreaX + 20,
-      this.scoreAreaHeight / 2,
+      this.pos.x + 20,
+      this.height / 2,
     );
     this.p5.text(
       'Highest Score: ' + this.formatNumber(this.highestScore, 5),
-      (this.gameAreaWidth / 2) + this.gameAreaX + 20,
-      this.scoreAreaHeight / 2,
+      (this.width / 2) + this.pos.x + 20,
+      this.height / 2,
     );
   }
 

@@ -35,10 +35,10 @@ export class GameArea {
     this.CANVAS_GAME_AREA_Y_START = Math.floor(this.height * CANVAS_SETTINGS.SCORE_DISPLAY_HEIGHT);
 
     this.scoreManager = new ScoreManager({
-      gameAreaX: x,
-      gameAreaY: y,
-      gameAreaWidth: width,
-      scoreAreaHeight: this.CANVAS_GAME_AREA_Y_START,
+      x,
+      y,
+      width,
+      height: this.CANVAS_GAME_AREA_Y_START,
       p5: this.p5,
     });
 
