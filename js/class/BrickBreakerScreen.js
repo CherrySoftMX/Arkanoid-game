@@ -35,12 +35,12 @@ export class BrickBreakerScreen extends GameArea {
     this.balls.forEach(ball => ball.draw());
     this.powerUps.forEach(p => p.draw());
     this.drawBlocks();
+    this.handleEndGame();
   }
 
   onUpdate() {
     this.handleMultipleBalls();
     this.handlePowerUps();
-    this.handleEndGame();
   }
 
   handleKeyPressed(input) {
@@ -148,8 +148,6 @@ export class BrickBreakerScreen extends GameArea {
       windowHeight: this.width,
       objectHeight: playerHeight,
       objectWidth: playerWidth,
-      relativeToX: this.x,
-      relativeToY: this.y,
     });
     const playerY = this.y + this.width - playerHeight - 10;
 
@@ -161,7 +159,7 @@ export class BrickBreakerScreen extends GameArea {
       height: playerHeight,
       type: 'Player',
     });
-    newPlayer.setScreenLayoutManager(this.layoutManager);
+    newPlayer.setScreenLayoutManager(this.firstLayoutManager);
     newPlayer.configure();
 
     // Calculate ball atributes
@@ -176,7 +174,7 @@ export class BrickBreakerScreen extends GameArea {
       type: 'Ball',
       p5: this.p5,
     });
-    newBall.setScreenLayoutManager(this.layoutManager);
+    newBall.setScreenLayoutManager(this.firstLayoutManager);
     newBall.configure();
     newBall.followPlayer(newPlayer);
 
@@ -217,13 +215,13 @@ export class BrickBreakerScreen extends GameArea {
     const blocksMargin = 0;
 
     let levelRow = structure[0];
-    let blockX = blocksMargin + this.x;
+    let blockX = blocksMargin;
     const gameAreaWidth = this.width;
     // Los bloques comienzan a dibujarse en el area de juego
     let blockY = blocksMargin + this.CANVAS_GAME_AREA_Y_START;
     for (let i = 0; i < structure.length; i++) {
       levelRow = structure[i];
-      blockX = blocksMargin + this.x;
+      blockX = blocksMargin;
       // El ancho de los bloques puede variar de acuerdo al número
       // de bloques en la fila
       const blocksWidth = gameAreaWidth / levelRow.length;
@@ -272,7 +270,7 @@ export class BrickBreakerScreen extends GameArea {
     ball.forEach(ball => ball.increaseSpeed(bSpeed));
   }
 
-  update({ x, y, type = 'Unknown' }) {
+  update({ x, y, width, height, type = 'Unknown' }) {
     console.log('Notificacion a screen');
     console.log(type);
     switch (type) {
@@ -282,11 +280,13 @@ export class BrickBreakerScreen extends GameArea {
         const powerUp = new PowerUp({
           x,
           y,
+          width,
+          height,
           p5,
           type: 'PowerUp',
           callback: this.powerUpMultipleBalls.bind(this, 2),
         });
-        powerUp.setScreenLayoutManager(this.layoutManager);
+        powerUp.setScreenLayoutManager(this.firstLayoutManager);
 
         powerUp.addCollisionObject(this.player);
         powerUp.addObserver(this);
@@ -319,7 +319,7 @@ export class BrickBreakerScreen extends GameArea {
         type: 'Ball',
         p5: this.p5,
       });
-      newBall.setScreenLayoutManager(this.layoutManager);
+      newBall.setScreenLayoutManager(this.firstLayoutManager);
       newBall.configure();
 
       let speedCurrentBall = currentBall.getSpeedVector();

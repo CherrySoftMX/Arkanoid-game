@@ -21,6 +21,7 @@ export class ScreenLayoutManager {
   calculateLayout({ p5 }) {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
+    console.log(windowWidth);
 
     const { width, layout } = this.getWindowLargerAxis();
     this.layout = layout;

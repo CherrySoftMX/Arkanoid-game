@@ -17,19 +17,19 @@ export class ScoreManager extends Drawable {
 
   draw() {
     this.p5.fill(94, 92, 92);
-    this.p5.rect(this.pos.x, this.pos.y, this.width, this.height);
+    this.p5.rect(0, this.pos.y, this.width, this.height);
 
     this.p5.fill(255);
-    this.p5.textSize(12);
+    this.p5.textSize(this.width * 0.04);
     this.p5.textAlign(this.p5.LEFT, this.p5.CENTER);
     this.p5.text(
       'Score: ' + this.formatNumber(this.getScore(), 5),
-      this.pos.x + 20,
+      20,
       this.height / 2,
     );
     this.p5.text(
       'Highest Score: ' + this.formatNumber(this.highestScore, 5),
-      (this.width / 2) + this.pos.x + 20,
+      this.width / 2,
       this.height / 2,
     );
   }

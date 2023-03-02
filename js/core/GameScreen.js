@@ -5,25 +5,16 @@ import { ScreenLayoutManager } from './ScreenLayoutManager.js';
 import { BrickBreakerScreen } from '../class/BrickBreakerScreen.js';
 
 export class GameScreen {
-  
+
   constructor(options, p5) {
     this.p5 = p5;
 
     this.layoutManager = new ScreenLayoutManager();
-    this.layoutManager.calculateLayout({ p5 });
-
-    // Simular que se presionan las flechas del teclado cuando
-    // se presionan los botones en pantalla
-    this.layoutManager.getButtons().forEach(btn => {
-      const simulatedInput = btn.type === BUTTON_TYPES.LEFT ? this.p5.LEFT_ARROW : this.p5.RIGHT_ARROW;
-      btn.setOnClick(() => this.handleKeyPressed(simulatedInput));
-      btn.setOnClickRelease(() => this.handleKeyReleased());
-    });
+    this.gameAreaData = null;
+    this.handleResize();
 
     this.canvasHeight = this.layoutManager.getWindowHeight();
     this.canvasWidth = this.layoutManager.getWindowWidth();
-
-    this.gameAreaData = this.layoutManager.getGameScreenData();
 
     // La coordenada (y) a partir de la cual empieza el area de juego
     this.CANVAS_GAME_AREA_Y = Math.floor(this.canvasHeight * options.SCORE_DISPLAY_HEIGHT);
@@ -32,7 +23,7 @@ export class GameScreen {
 
     this.canvasX = 0;
     this.canvasY = 0;
-  
+
     this.canvas.position(this.canvasX, this.canvasY);
 
     this.isOnMenu = true;
@@ -48,6 +39,30 @@ export class GameScreen {
       y,
       layoutManager: this.layoutManager,
     });
+
+    this.handleResize();
+  }
+
+  handleResize() {
+    this.layoutManager = new ScreenLayoutManager();
+    this.layoutManager.calculateLayout({ p5: this.p5 });
+
+    // Simular que se presionan las flechas del teclado cuando se presionan los botones en pantalla
+    this.layoutManager.getButtons().forEach(btn => {
+      const simulatedInput = btn.type === BUTTON_TYPES.LEFT ? this.p5.LEFT_ARROW : this.p5.RIGHT_ARROW;
+      btn.setOnClick(() => this.handleKeyPressed(simulatedInput));
+      btn.setOnClickRelease(() => this.handleKeyReleased());
+    });
+
+    this.gameAreaData = this.layoutManager.getGameScreenData();
+    this.canvasHeight = this.layoutManager.getWindowHeight();
+    this.canvasWidth = this.layoutManager.getWindowWidth();
+    this.p5.resizeCanvas(this.canvasWidth, this.canvasHeight);
+
+    if (this.brickBreakerScreen) {      
+      const { x, y, width } = this.gameAreaData;
+      this.brickBreakerScreen.handleResize({ x, y, width });
+    }
   }
 
   draw() {
@@ -82,7 +97,7 @@ export class GameScreen {
   generateMenu() {
     const btnWidth = this.canvasWidth * CANVAS_SETTINGS.BTN_WIDTH;
     const btnHeight = (btnWidth * CANVAS_SETTINGS.BTN_ASPECT_RATIO_V) / CANVAS_SETTINGS.BTN_ASPECT_RATIO_H;
-  
+
     const { x, y } = calculateCoordsToCenterItem({
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,

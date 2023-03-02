@@ -85,13 +85,13 @@ export class Player extends Collisionable {
 
   shouldMoveToLeft() {
     const gameArea = this.screenLayoutManager.getGameScreenData();
-    const isInsideScreen = (this.pos.x - this.speed) >= gameArea.x;
+    const isInsideScreen = (this.pos.x - this.speed) >= 0;
     return isInsideScreen; 
   }
 
   shouldMoveToRight() {
     const gameArea = this.screenLayoutManager.getGameScreenData();
-    const isInsideScreen = this.pos.x + this.speed <= gameArea.width - this.width + gameArea.x;
+    const isInsideScreen = this.pos.x + this.speed <= gameArea.width - this.width;
     return isInsideScreen;
   }
 

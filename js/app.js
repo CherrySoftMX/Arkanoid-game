@@ -30,4 +30,8 @@ new p5((p) => {
     game.handleTouchReleased();
   };
 
+  p.windowResized = () => {
+    game.handleResize();
+  };
+
 });
