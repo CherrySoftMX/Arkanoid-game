@@ -114,11 +114,26 @@ export class GameScreen {
     const input = key ? key : this.p5.keyCode;
     if (this.p5.keyIsPressed || this.p5.mouseIsPressed) {
       this.brickBreakerScreen.handleKeyPressed(input);
+
+      const [leftBtn, rightBtn] = this.layoutManager.getButtons();
+      if (input === this.p5.LEFT_ARROW) {
+        leftBtn.imClicked = true;
+      } else if (input === this.p5.RIGHT_ARROW) {
+        rightBtn.imClicked = true;
+      }
     }
   }
 
   handleKeyReleased() {
     this.brickBreakerScreen.handleKeyReleased();
+
+    const input = this.p5.keyCode;
+    const [leftBtn, rightBtn] = this.layoutManager.getButtons();
+    if (input === this.p5.LEFT_ARROW) {
+      leftBtn.imClicked = false;
+    } else if (input === this.p5.RIGHT_ARROW) {
+      rightBtn.imClicked = false;
+    }
   }
 
   handleTouchStarted() {
