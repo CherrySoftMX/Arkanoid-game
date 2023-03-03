@@ -3,6 +3,7 @@ import { calculateCoordsToCenterItem } from '../utils/utils.js';
 import { TEXT_LABELS } from '../constants/strings.js';
 import { ScreenLayoutManager } from './ScreenLayoutManager.js';
 import { BrickBreakerScreen } from '../class/BrickBreakerScreen.js';
+import { inputManager } from './KeyInputManager.js';
 
 export class GameScreen {
 
@@ -111,7 +112,7 @@ export class GameScreen {
   }
 
   handleKeyPressed(key) {
-    const input = key ? key : this.p5.keyCode;
+    const input = key ? key : inputManager.getLastPressedKey();
     if (this.p5.keyIsPressed || this.p5.mouseIsPressed) {
       this.brickBreakerScreen.handleKeyPressed(input);
 
@@ -126,12 +127,12 @@ export class GameScreen {
 
   handleKeyReleased() {
     this.brickBreakerScreen.handleKeyReleased();
+    const releasedKey = this.p5.keyCode;
 
-    const input = this.p5.keyCode;
     const [leftBtn, rightBtn] = this.layoutManager.getButtons();
-    if (input === this.p5.LEFT_ARROW) {
+    if (releasedKey === this.p5.LEFT_ARROW) {
       leftBtn.imClicked = false;
-    } else if (input === this.p5.RIGHT_ARROW) {
+    } else if (releasedKey === this.p5.RIGHT_ARROW) {
       rightBtn.imClicked = false;
     }
   }

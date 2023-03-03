@@ -1,6 +1,7 @@
 'use strict';
 import { GameScreen } from './core/GameScreen.js'
 import { CANVAS_SETTINGS } from './constants/constants.js';
+import { inputManager } from './core/KeyInputManager.js';
 
 let game;
 
@@ -15,10 +16,12 @@ new p5((p) => {
   };
 
   p.keyReleased = () => {
+    inputManager.onKeyReleased({ keyCode: p.keyCode });
     game.handleKeyReleased();
   };
 
   p.keyPressed = () => {
+    inputManager.onKeyPressed({ keyCode: p.keyCode });
     game.handleKeyPressed();
   };
 
