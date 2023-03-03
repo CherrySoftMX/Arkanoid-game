@@ -6,6 +6,7 @@ import { Block } from './Block.js';
 import { Player } from './Player.js';
 import { Ball } from './Ball.js';
 import { PowerUp } from './PowerUp.js';
+import { calculateCoordsToCenterItem } from '../utils/utils.js';
 
 
 export class BrickBreakerScreen extends GameArea {
@@ -34,12 +35,12 @@ export class BrickBreakerScreen extends GameArea {
     this.balls.forEach(ball => ball.draw());
     this.powerUps.forEach(p => p.draw());
     this.drawBlocks();
+    this.handleEndGame();
   }
 
   onUpdate() {
     this.handleMultipleBalls();
     this.handlePowerUps();
-    this.handleEndGame();
   }
 
   handleKeyPressed(input) {
@@ -138,20 +139,43 @@ export class BrickBreakerScreen extends GameArea {
       structure: levels[levelNum],
     });
 
+    // Calculate player attributes
+    const playerWidth = Math.ceil(this.width * 0.2);
+    const playerHeight = this.width * CONSTANTS.PLAYER_HEIGHT;
+
+    const { x: playerX } = calculateCoordsToCenterItem({
+      windowWidth: this.width,
+      windowHeight: this.width,
+      objectHeight: playerHeight,
+      objectWidth: playerWidth,
+    });
+    const playerY = this.y + this.width - playerHeight - 10;
+
     const newPlayer = new Player({
       p5: this.p5,
-      gameAreaWidth: this.width,
-      gameAreaX: this.x,
-      gameAreaY: this.y,
+      x: playerX,
+      y: playerY,
+      width: playerWidth,
+      height: playerHeight,
+      type: 'Player',
     });
+    newPlayer.setScreenLayoutManager(this.firstLayoutManager);
+    newPlayer.configure();
+
+    // Calculate ball atributes
+    const ballWidth = this.width * CONSTANTS.BALL_WIDTH;
+    const ballHeight = ballWidth;
 
     const newBall = new Ball({
+      x: 0,
+      y: 0,
+      width: ballWidth,
+      height: ballHeight,
+      type: 'Ball',
       p5: this.p5,
-      gameAreaWidth: this.width,
-      gameAreaX: this.x,
-      gameAreaY: this.y,
-      player: newPlayer,
     });
+    newBall.setScreenLayoutManager(this.firstLayoutManager);
+    newBall.configure();
     newBall.followPlayer(newPlayer);
 
     const {
@@ -191,28 +215,29 @@ export class BrickBreakerScreen extends GameArea {
     const blocksMargin = 0;
 
     let levelRow = structure[0];
-    let blockX = blocksMargin + this.x;
+    let blockX = blocksMargin;
     const gameAreaWidth = this.width;
     // Los bloques comienzan a dibujarse en el area de juego
     let blockY = blocksMargin + this.CANVAS_GAME_AREA_Y_START;
     for (let i = 0; i < structure.length; i++) {
       levelRow = structure[i];
-      blockX = blocksMargin + this.x;
+      blockX = blocksMargin;
       // El ancho de los bloques puede variar de acuerdo al número
       // de bloques en la fila
       const blocksWidth = gameAreaWidth / levelRow.length;
       for (let j = 0; j < levelRow.length; j++) {
         const blockType = levelRow[j];
-        const newBlock = new Block(
-          blocksWidth,
-          blocksHeight,
-          blockX,
-          blockY,
-          BLOCK_TYPES[blockType].score,
-          BLOCK_TYPES[blockType].durability,
+        const newBlock = new Block({
+          type: 'Block',
+          width: blocksWidth,
+          height: blocksHeight,
+          x: blockX,
+          y: blockY,
+          score: BLOCK_TYPES[blockType].score,
+          durability: BLOCK_TYPES[blockType].durability,
           blockType,
-          this.p5,
-        );
+          p5: this.p5,
+        });
         if (levelRow[j] === '*') {
           newBlock.destroy();
         }
@@ -245,19 +270,23 @@ export class BrickBreakerScreen extends GameArea {
     ball.forEach(ball => ball.increaseSpeed(bSpeed));
   }
 
-  update({ x, y, type = 'Unknown' }) {
+  update({ x, y, width, height, type = 'Unknown' }) {
+    console.log('Notificacion a screen');
+    console.log(type);
     switch (type) {
       case 'Block':
         const p5 = this.p5;
-        const canvasHeight = this.canvasHeight;
 
         const powerUp = new PowerUp({
           x,
           y,
+          width,
+          height,
           p5,
-          canvasHeight,
+          type: 'PowerUp',
           callback: this.powerUpMultipleBalls.bind(this, 2),
         });
+        powerUp.setScreenLayoutManager(this.firstLayoutManager);
 
         powerUp.addCollisionObject(this.player);
         powerUp.addObserver(this);
@@ -277,20 +306,26 @@ export class BrickBreakerScreen extends GameArea {
     for (let i = 0; i < num; i++) {
       const currentBall = this.balls[0];
 
-      const newBall = new Ball({
-        p5: this.p5,
-        gameAreaWidth: this.width,
-        gameAreaX: this.x,
-        gameAreaY: this.y,
-        player: this.player,
-      });
+      // Calculate ball atributes
+      const ballWidth = this.width * CONSTANTS.BALL_WIDTH;
+      const ballHeight = ballWidth;
+      const { x, y } = currentBall.getPositionVector();
 
-      const posCurrentBall = currentBall.getPositionVector();
+      const newBall = new Ball({
+        x,
+        y,
+        width: ballWidth,
+        height: ballHeight,
+        type: 'Ball',
+        p5: this.p5,
+      });
+      newBall.setScreenLayoutManager(this.firstLayoutManager);
+      newBall.configure();
+
       let speedCurrentBall = currentBall.getSpeedVector();
       speedCurrentBall.x *= -1;
       speedCurrentBall.y *= i % 2 === 0 ? -1 : 1;
 
-      newBall.setPositionVector(posCurrentBall);
       newBall.setSpeedVector(speedCurrentBall);
 
       this.loadCollisions({

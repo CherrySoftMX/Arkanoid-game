@@ -1,5 +1,5 @@
 'use strict';
-import { GameScreen } from './class/GameScreen.js'
+import { GameScreen } from './core/GameScreen.js'
 import { CANVAS_SETTINGS } from './constants/constants.js';
 
 let game;
@@ -28,6 +28,10 @@ new p5((p) => {
 
   p.touchEnded = () => {
     game.handleTouchReleased();
+  };
+
+  p.windowResized = () => {
+    game.handleResize();
   };
 
 });

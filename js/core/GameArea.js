@@ -1,6 +1,6 @@
 import { CONSTANTS, LAYOUT_TYPES, CANVAS_SETTINGS } from '../constants/constants.js';
-import { ScoreManager } from '../class/ScoreManager.js';
-import { Collisionable } from '../class/Collisionable.js';
+import { ScoreManager } from './ScoreManager.js';
+import { Collisionable } from './Collisionable.js';
 import { TEXT_LABELS } from '../constants/strings.js';
 
 /**
@@ -9,6 +9,16 @@ import { TEXT_LABELS } from '../constants/strings.js';
  * 
  * To implement your own game you must extend this class and implement
  * all its methods.
+ * 
+ * When the game window is resized the properties (x, y, resizeFactor)
+ * will be updated, but, the developer isn't intented to use this values.
+ * The GameArea translates the coords system to start at its own (x, y), so
+ * you can draw in the GameArea without the need of reading (x, y, layoutManager or resizeFactor).
+ * 
+ * If you, the developer, have the need to read the properties (x, y or width) of the game area, you can
+ * use (firstLayoutManager). Warning: GameScreen's layoutManager will be updated when the screen is resized, so the
+ * developer shouldn't use layoutManager properties to draw things because GameArea SCALES, so for drawing
+ * purposes, the developer is intented to use (width) and (height) properties because they never change.
  */
 export class GameArea {
 
@@ -29,16 +39,16 @@ export class GameArea {
     this.height = width;
     this.x = x;
     this.y = y;
-    this.layoutManager = layoutManager;
+    this.firstLayoutManager = layoutManager;
 
     // This var indicates the (y) coordinate where the gameplay will be rendered.
     this.CANVAS_GAME_AREA_Y_START = Math.floor(this.height * CANVAS_SETTINGS.SCORE_DISPLAY_HEIGHT);
 
     this.scoreManager = new ScoreManager({
-      gameAreaX: x,
-      gameAreaY: y,
-      gameAreaWidth: width,
-      scoreAreaHeight: this.CANVAS_GAME_AREA_Y_START,
+      x,
+      y,
+      width,
+      height: this.CANVAS_GAME_AREA_Y_START,
       p5: this.p5,
     });
 
@@ -46,15 +56,22 @@ export class GameArea {
     this.lives = CONSTANTS.PLAYER_INITIAL_LIVES;
     this.isLevelStarted = false;
     this.currentLevel = CONSTANTS.INITIAL_LEVEL;
+
+    this.resizeFactor = 1;
+    this.originalWidth = width;
   }
 
   /**
    * Renders the game scene and handle game updates.
    */
   draw() {
+    this.p5.push();
+    this.p5.translate(this.x, this.y);
+    this.p5.scale(this.resizeFactor);
     this.drawGameplay();
     this.scoreManager.draw();
     this.drawHelpMessage();
+    this.p5.pop();
     this.onUpdate();
   }
 
@@ -131,6 +148,21 @@ export class GameArea {
    * stops touching the screen.
    */
   handleTouchReleased() { }
+
+  /**
+   * Handles the screen resize.
+   * This method is called by GameScreen and it should't be used
+   * by the developer.
+   * 
+   * @param {Float} obj.x - The new x coord of the game area.
+   * @param {Float} obj.y - The new y coord of the game area.
+   * @param {Float} obj.width - The new width of the game area.
+   */
+  handleResize({ x, y, width }) {
+    this.x = x;
+    this.y = y;
+    this.resizeFactor = width / this.originalWidth;
+  }
 
   /**
    * Displays a message by default when this.isLevelStarted is false.
@@ -226,25 +258,28 @@ export class GameArea {
     const leftBorder = new Collisionable({
       width: 10,
       height: this.height,
-      x: this.x - 10,
+      x: -10,
       y: this.y,
       type: 'LeftBorder',
+      p5: this.p5,
     });
 
     const rightBorder = new Collisionable({
       width: 10,
       height: this.height,
-      x: this.x + this.width,
+      x: this.width,
       y: this.y,
       type: 'RightBorder',
+      p5: this.p5,
     });
 
     const topBorder = new Collisionable({
       width: this.width,
       height: 10,
-      x: this.x,
+      x: 0,
       y: this.CANVAS_GAME_AREA_Y_START - 10,
       type: 'TopBorder',
+      p5: this.p5,
     });
 
     return {
@@ -274,13 +309,9 @@ export class GameArea {
     }
     this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
     this.p5.rectMode(this.p5.CORNERS);
-    this.p5.textSize(20);
+    this.p5.textSize(boxWidth * 0.08);
     this.p5.fill(255);
-    if (this.layoutManager.getCurrentLayoutType === LAYOUT_TYPES.VERTICAL) {
-      this.p5.text(message, 0, 0, boxWidth, boxHeight);
-    } else {
-      this.p5.text(message, this.x, 0, boxWidth, boxHeight);
-    }
+    this.p5.text(message, 0, 0, boxWidth, boxHeight);
     this.p5.pop();
   }
 
