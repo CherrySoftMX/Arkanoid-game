@@ -85,13 +85,7 @@ export class GameScreen {
   }
 
   drawButtons() {
-    this.p5.push();
-    this.p5.fill(60, 60, 60);
-    this.layoutManager.getButtons().forEach(btn => {
-      const { x, y, width, height } = btn.getCompleteData();
-      this.p5.rect(x, y, width, height);
-    });
-    this.p5.pop();
+    this.layoutManager.getButtons().forEach(btn => btn.draw());
   }
 
   generateMenu() {
