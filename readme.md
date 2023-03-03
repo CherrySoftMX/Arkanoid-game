@@ -34,11 +34,13 @@ A simple Brick Breaker clone made with p5.js
 - [x] Sprites proportional to window size
 - [x] Ball movement speed proportional to window size
 - [x] Player movement speed proportional to window size
+- [x] Improve player sprite
+- [x] Real time responsive in-game layout
+- [x] Extract game engine from game implementation
+- [ ] Real time responsive menu
 - [ ] Touch screen buttons design
 - [ ] Movable bricks
-- [x] Improve player sprite
 - [ ] Improve bricks sprites
 - [ ] Improve main menu design
 - [ ] Add sound effects
 - [ ] Add more Power Ups
-- [ ] Improve code quality
