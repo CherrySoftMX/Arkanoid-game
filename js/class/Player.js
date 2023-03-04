@@ -75,8 +75,6 @@ export class Player extends Collisionable {
     } else if (_input === this.p5.LEFT_ARROW && this.shouldMoveToLeft()) {
       this.moveToLeft();
     }
-    const prevVel = this.vel.copy();
-    this.pos.sub(prevVel);
   }
 
   keyReleased() {
