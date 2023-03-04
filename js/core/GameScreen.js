@@ -85,13 +85,7 @@ export class GameScreen {
   }
 
   drawButtons() {
-    this.p5.push();
-    this.p5.fill(60, 60, 60);
-    this.layoutManager.getButtons().forEach(btn => {
-      const { x, y, width, height } = btn.getCompleteData();
-      this.p5.rect(x, y, width, height);
-    });
-    this.p5.pop();
+    this.layoutManager.getButtons().forEach(btn => btn.draw());
   }
 
   generateMenu() {
@@ -120,11 +114,26 @@ export class GameScreen {
     const input = key ? key : this.p5.keyCode;
     if (this.p5.keyIsPressed || this.p5.mouseIsPressed) {
       this.brickBreakerScreen.handleKeyPressed(input);
+
+      const [leftBtn, rightBtn] = this.layoutManager.getButtons();
+      if (input === this.p5.LEFT_ARROW) {
+        leftBtn.imClicked = true;
+      } else if (input === this.p5.RIGHT_ARROW) {
+        rightBtn.imClicked = true;
+      }
     }
   }
 
   handleKeyReleased() {
     this.brickBreakerScreen.handleKeyReleased();
+
+    const input = this.p5.keyCode;
+    const [leftBtn, rightBtn] = this.layoutManager.getButtons();
+    if (input === this.p5.LEFT_ARROW) {
+      leftBtn.imClicked = false;
+    } else if (input === this.p5.RIGHT_ARROW) {
+      rightBtn.imClicked = false;
+    }
   }
 
   handleTouchStarted() {
