@@ -1,5 +1,6 @@
 import { CONSTANTS } from '../constants/constants.js';
 import { Collisionable } from '../core/Collisionable.js';
+import { inputManager } from '../core/KeyInputManager.js';
 
 export class Player extends Collisionable {
   
@@ -57,16 +58,32 @@ export class Player extends Collisionable {
   }
 
   controlInputs(input) {
-    if (input === this.p5.RIGHT_ARROW && this.shouldMoveToRight()) {
+    console.log(inputManager.keys);
+    let _input = input;
+
+    // If the current pressed key isn't an arrow but an arrow is pressed.
+    if (_input !== this.p5.LEFT_ARROW || _input !== this.p5.RIGHT_ARROW) {
+      const arrowPressed = inputManager.getLastPressedKeyBetween({
+        firstKey: this.p5.LEFT_ARROW,
+        secondKey: this.p5.RIGHT_ARROW,
+      });
+      _input = arrowPressed ? arrowPressed : _input;
+    }
+
+    if (_input === this.p5.RIGHT_ARROW && this.shouldMoveToRight()) {
       this.moveToRight();
-    } else if (input === this.p5.LEFT_ARROW && this.shouldMoveToLeft()) {
+    } else if (_input === this.p5.LEFT_ARROW && this.shouldMoveToLeft()) {
       this.moveToLeft();
     }
-    const prevVel = this.vel.copy();
-    this.pos.sub(prevVel);
   }
 
   keyReleased() {
+    // If a key was released but other key is being pressed.
+    if (inputManager.isAKeyPressed()) {
+      const currentPressedKey = inputManager.getLastPressedKey();
+      this.controlInputs(currentPressedKey);
+      return;
+    }
     this.vel.set(0, 0);
     this.movementDirection = 0;
   }

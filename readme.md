@@ -39,7 +39,6 @@ A simple Brick Breaker clone made with p5.js
 - [x] Extract game engine from game implementation
 - [x] Touch screen buttons design
 - [ ] Real time responsive menu
-- [ ] Movable bricks
 - [ ] Improve bricks sprites
 - [ ] Improve main menu design
 - [ ] Add sound effects

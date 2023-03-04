@@ -28,7 +28,7 @@ export class GameButton extends Drawable {
     this.p5.push();
 
     this.p5.noSmooth();
-    this.p5.fill(this.imClicked ? '#3C3C3C' : '#323232');
+    this.p5.fill(this.imClicked ? '#323232' : '#3C3C3C');
 
     this.p5.translate(this.pos.x, this.pos.y);
     this.p5.rect(0, 0, this.width, this.height);
