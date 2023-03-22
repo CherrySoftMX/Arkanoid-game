@@ -26,12 +26,29 @@ export class Ball extends ColliderObject {
     this.vel = this.p5.createVector(this.speed, this.speed);
 
     this.isFollowingPlayer = false;
+    this.trails = [];
   }
 
   draw() {
     this.p5.fill(255);
     this.update();
+    this.drawTrail();
     this.p5.ellipse(this.pos.x, this.pos.y, this.width, this.height);
+  }
+
+  drawTrail() {
+    this.trails.push(this.pos.copy());
+    if (this.trails.length > 15) {
+      this.trails.shift();
+    }
+    const reduce = 255 / 15;
+    this.p5.push();
+    this.p5.noStroke();
+    this.trails.forEach((obj, index) => {
+      this.p5.fill(255, 255, 255, 255 - reduce * (15 - index));
+      this.p5.ellipse(obj.x, obj.y, this.width, this.width);
+    });
+    this.p5.pop();
   }
 
   update() {

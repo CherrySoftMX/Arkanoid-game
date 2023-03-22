@@ -7,7 +7,7 @@ import { inputManager } from './KeyInputManager.js';
 
 export class GameScreen {
 
-  constructor(options, p5) {
+  constructor(options, GameArea, p5) {
     this.p5 = p5;
 
     this.layoutManager = new ScreenLayoutManager();
@@ -33,7 +33,7 @@ export class GameScreen {
     this.generateMenu();
 
     const { width, x, y } = this.gameAreaData
-    this.brickBreakerScreen = new BrickBreakerScreen({
+    this.brickBreakerScreen = new GameArea({
       p5: this.p5,
       width,
       x,

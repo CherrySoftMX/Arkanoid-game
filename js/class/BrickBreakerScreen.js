@@ -7,6 +7,8 @@ import { Player } from './Player.js';
 import { Ball } from './Ball.js';
 import { PowerUp } from './PowerUp.js';
 import { calculateCoordsToCenterItem } from '../utils/utils.js';
+import { PlayerPistol } from './PlayerPistol.js';
+import { Bullet } from './Bullet.js';
 
 
 export class BrickBreakerScreen extends GameArea {
@@ -25,6 +27,7 @@ export class BrickBreakerScreen extends GameArea {
     this.player = player;
     this.balls = [ball];
     this.powerUps = [];
+    this.bullets = [];
   }
 
   drawGameplay() {
@@ -34,6 +37,7 @@ export class BrickBreakerScreen extends GameArea {
     this.player.draw();
     this.balls.forEach(ball => ball.draw());
     this.powerUps.forEach(p => p.draw());
+    this.bullets.forEach(b => b.draw());
     this.drawBlocks();
     this.handleEndGame();
   }
@@ -41,6 +45,7 @@ export class BrickBreakerScreen extends GameArea {
   onUpdate() {
     this.handleMultipleBalls();
     this.handlePowerUps();
+    this.bullets.filter(b => b.isActive());
   }
 
   handleKeyPressed(input) {
@@ -81,6 +86,9 @@ export class BrickBreakerScreen extends GameArea {
       levelNum: currentLevel,
     });
 
+    if (this.player.type !== 'Player') {
+      this.player.finish();
+    }
     this.blocks = blocks;
     this.player = player;
     this.balls = [ball];
@@ -284,7 +292,8 @@ export class BrickBreakerScreen extends GameArea {
           height,
           p5,
           type: 'PowerUp',
-          callback: this.powerUpMultipleBalls.bind(this, 2),
+          callback: () => this.powerUpPistol(),
+          //callback: this.powerUpMultipleBalls.bind(this, 2),
         });
         powerUp.setScreenLayoutManager(this.firstLayoutManager);
 
@@ -296,7 +305,29 @@ export class BrickBreakerScreen extends GameArea {
       case 'PowerUp':
         this.powerUps = this.powerUps.filter(p => p.isActive());
         break;
+      case 'PlayerPistol':
+        // En este caso (x, y) corresponden al cañon, no al jugador
+        this.createBullet({ x, y });
+        break;
+      case 'Bullet':
+        this.bullets = this.bullets.filter(b => b.isActive());
+        break;
     }
+  }
+
+  createBullet({ x, y }) {
+    const bullet = new Bullet({ x, y: y - 5, width: 10, height: 20, p5: this.p5 });
+    
+    const currentBall = this.balls[0];
+    this.loadCollisions({
+      player: bullet,
+      colliders: [
+        ...currentBall.getCollisionObjects()
+      ],
+    });
+    bullet.addObserver(this);
+    
+    this.bullets.push(bullet);
   }
 
   /*
@@ -337,6 +368,17 @@ export class BrickBreakerScreen extends GameArea {
 
       this.balls.push(newBall);
     }
+  }
+
+  powerUpPistol() {
+    this.playerBackup = this.player;
+    this.player = new PlayerPistol({ player: this.playerBackup });
+    this.player.addObserver(this);
+
+    setTimeout(() => {
+      this.player.finish();
+      this.player = this.playerBackup;
+    }, 10000);
   }
 
 }
