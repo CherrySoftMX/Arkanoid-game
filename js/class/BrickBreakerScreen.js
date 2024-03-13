@@ -296,7 +296,6 @@ export class BrickBreakerScreen extends GameArea {
           //callback: this.powerUpMultipleBalls.bind(this, 2),
         });
         powerUp.setScreenLayoutManager(this.firstLayoutManager);
-
         powerUp.addCollisionObject(this.player);
         powerUp.addObserver(this);
 
@@ -307,7 +306,7 @@ export class BrickBreakerScreen extends GameArea {
         break;
       case 'PlayerPistol':
         // En este caso (x, y) corresponden al cañon, no al jugador
-        this.createBullet({ x, y });
+        this.createBullet({ x, y, width, height });
         break;
       case 'Bullet':
         this.bullets = this.bullets.filter(b => b.isActive());
@@ -315,9 +314,25 @@ export class BrickBreakerScreen extends GameArea {
     }
   }
 
-  createBullet({ x, y }) {
-    const bullet = new Bullet({ x, y: y - 5, width: 10, height: 20, p5: this.p5 });
+  createBullet({ x, y, width, height }) {
+    //const bullet = new Bullet({ x, y: y - 5, width: 10, height: 20, p5: this.p5 });
     
+    const bullet = new Bullet({
+      x: x - width / 4,
+      y: y - 5,
+      width: 10,
+      height: 20,
+      p5: this.p5,
+    });
+
+    const bullet2 = new Bullet({
+      x: x + width / 4,
+      y: y - 5,
+      width: 10,
+      height: 20,
+      p5: this.p5,
+    });
+
     const currentBall = this.balls[0];
     this.loadCollisions({
       player: bullet,
@@ -325,9 +340,17 @@ export class BrickBreakerScreen extends GameArea {
         ...currentBall.getCollisionObjects()
       ],
     });
+    this.loadCollisions({
+      player: bullet2,
+      colliders: [
+        ...currentBall.getCollisionObjects()
+      ],
+    });
     bullet.addObserver(this);
+    bullet2.addObserver(this);
     
     this.bullets.push(bullet);
+    this.bullets.push(bullet2);
   }
 
   /*
@@ -371,14 +394,13 @@ export class BrickBreakerScreen extends GameArea {
   }
 
   powerUpPistol() {
-    this.playerBackup = this.player;
-    this.player = new PlayerPistol({ player: this.playerBackup });
+    this.player = new PlayerPistol({ player: this.player });
     this.player.addObserver(this);
 
     setTimeout(() => {
       this.player.finish();
-      this.player = this.playerBackup;
-    }, 10000);
+      this.player = this.player.getPlayer();
+    }, 8000);
   }
 
 }

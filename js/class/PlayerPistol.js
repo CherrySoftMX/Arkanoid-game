@@ -20,9 +20,21 @@ export class PlayerPistol {
     const canyonHeight = height;
 
     this.player.p5.fill(255);
-    this.player.p5.rect(
+    /*this.player.p5.rect(
       playerXCenter - canyonWidth / 2,
       y - height,
+      canyonWidth,
+      canyonHeight,
+    );*/
+    this.player.p5.rect(
+      playerXCenter - width / 4 - canyonWidth / 2,
+      y- height,
+      canyonWidth,
+      canyonHeight,
+    );
+    this.player.p5.rect(
+      playerXCenter + width / 4 - canyonWidth / 2,
+      y- height,
       canyonWidth,
       canyonHeight,
     );
@@ -56,6 +68,12 @@ export class PlayerPistol {
       type: 'PlayerPistol',
       x: playerXCenter,
       y: y - height,
+      width,
+      height,
     }));
+  }
+
+  getPlayer() {
+    return this.player;
   }
 }
