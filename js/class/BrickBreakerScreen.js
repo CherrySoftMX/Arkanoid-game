@@ -6,7 +6,7 @@ import { Block } from './Block.js';
 import { Player } from './Player.js';
 import { Ball } from './Ball.js';
 import { PowerUp } from './PowerUp.js';
-import { calculateCoordsToCenterItem } from '../utils/utils.js';
+import { calculateCoordsToCenterItem, getRandomNum } from '../utils/utils.js';
 import { PlayerPistol } from './PlayerPistol.js';
 import { Bullet } from './Bullet.js';
 
@@ -292,7 +292,22 @@ export class BrickBreakerScreen extends GameArea {
           height,
           p5,
           type: 'PowerUp',
-          callback: () => this.powerUpPistol(),
+          callback: () => {
+            const random = getRandomNum(1, 5);
+            switch (random) {
+              case 1:
+                this.powerUpPistol();
+                break;
+              case 2:
+                this.powerUpBigBall();
+                break;
+              case 3:
+                this.powerUpBiggerPlayer();
+                break;
+              default:
+                this.powerUpMultipleBalls(2);
+            }
+          },
           //callback: this.powerUpMultipleBalls.bind(this, 2),
         });
         powerUp.setScreenLayoutManager(this.firstLayoutManager);
@@ -316,7 +331,7 @@ export class BrickBreakerScreen extends GameArea {
 
   createBullet({ x, y, width, height }) {
     //const bullet = new Bullet({ x, y: y - 5, width: 10, height: 20, p5: this.p5 });
-    
+
     const bullet = new Bullet({
       x: x - width / 4,
       y: y - 5,
@@ -348,7 +363,7 @@ export class BrickBreakerScreen extends GameArea {
     });
     bullet.addObserver(this);
     bullet2.addObserver(this);
-    
+
     this.bullets.push(bullet);
     this.bullets.push(bullet2);
   }
@@ -401,6 +416,28 @@ export class BrickBreakerScreen extends GameArea {
       this.player.finish();
       this.player = this.player.getPlayer();
     }, 8000);
+  }
+
+  powerUpBigBall() {
+    if (this.balls.length === 0) return;
+    const currentBall = this.balls[0];
+    currentBall.width = currentBall.width * 2;
+    currentBall.increaseBaseSpeed(1.5);
+
+    setTimeout(() => {
+      currentBall.width = currentBall.width / 2;
+      currentBall.resetBaseSpeed();
+    }, 5000);
+  }
+
+  powerUpBiggerPlayer() {
+    const originalWidth = this.player.getWidth();
+    const newWidth = originalWidth * 1.8;
+
+    this.player.setWidth(newWidth);
+    setTimeout(() => {
+      this.player.setWidth(originalWidth);
+    }, 5000);
   }
 
 }

@@ -235,4 +235,13 @@ export class Ball extends ColliderObject {
     this.pos.sub(previousSpeed);
   }
 
+  increaseBaseSpeed(multiplier = 1) {
+    this.baseSpeed *= multiplier;
+  }
+
+  resetBaseSpeed() {
+    const gameArea = this.screenLayoutManager.getGameScreenData();
+    this.baseSpeed = (gameArea.width * CONSTANTS.BALL_SPEED) / CONSTANTS.GAME_AREA_HEIGHT_REFERENCE;
+  }
+
 }

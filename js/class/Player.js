@@ -3,7 +3,7 @@ import { Collisionable } from '../core/Collisionable.js';
 import { inputManager } from '../core/KeyInputManager.js';
 
 export class Player extends Collisionable {
-  
+
   constructor({ type = 'Player', ...rest }) {
     super({ type, ...rest });
     this.speed = 0;
@@ -125,6 +125,14 @@ export class Player extends Collisionable {
 
   increaseSpeed(increase) {
     this.speed += increase;
+  }
+
+  getWidth() {
+    return this.width;
+  }
+
+  setWidth(_width) {
+    this.width = _width;
   }
 
 }
