@@ -20,10 +20,18 @@ export class PowerUp extends ColliderObject {
 
   draw() {
     this.update();
-    this.p5.fill(255);
+    // #uW%xPE9
+    if (this.p5.frameCount % 60 > 30) {
+      this.p5.fill('#F7E99E');
+    } else {
+      this.p5.fill('#F4CE14');
+    }
     this.p5.rect(this.pos.x, this.pos.y, this.width, this.height);
+
     this.p5.fill(4, 4, 4);
-    this.p5.text(this.type, this.pos.x + 5, this.pos.y + 5);
+    this.p5.textSize(24);
+    this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
+    this.p5.text('?', this.pos.x + this.width / 2, this.pos.y + this.height / 2);
   }
 
   update() {
