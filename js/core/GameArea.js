@@ -6,25 +6,26 @@ import { TEXT_LABELS } from '../constants/strings.js';
 /**
  * This class provides the methods needed to render and manage
  * the gameplay screen.
- * 
+ *
  * To implement your own game you must extend this class and implement
  * all its methods.
- * 
+ *
  * When the game window is resized the properties (x, y, resizeFactor)
  * will be updated, but, the developer isn't intented to use this values.
  * The GameArea translates the coords system to start at its own (x, y), so
  * you can draw in the GameArea without the need of reading (x, y, layoutManager or resizeFactor).
- * 
+ *
  * If you, the developer, have the need to read the properties (x, y or width) of the game area, you can
  * use (firstLayoutManager). Warning: GameScreen's layoutManager will be updated when the screen is resized, so the
  * developer shouldn't use layoutManager properties to draw things because GameArea SCALES, so for drawing
  * purposes, the developer is intented to use (width) and (height) properties because they never change.
+ * cg9837
  */
 export class GameArea {
 
   /**
    * Constructor for the game area.
-   * 
+   *
    * @param {Object} obj.p5 - The p5 object.
    * @param {Float} obj.width - The width of the game area.
    * @param {Float} obj.x - The x coord of the game area.
@@ -94,7 +95,7 @@ export class GameArea {
    * This method will be called if this.lives < 1 in the startNextLevelLoad() method.
    * In this method you should include all the logic to handle what to do when
    * the player lives reaches 0.
-   * 
+   *
    * @param {Int} obj.currentLevel - The current level number.
    * @param {Boolean} obj.resetCurrentLevel - Indicates if the current level should be restarted.
    */
@@ -105,7 +106,7 @@ export class GameArea {
    * This method will be called after onGameOver() in startNextLevelLoad().
    * In this method you should include all the logic to load the next level of
    * your game based on the provided parameters.
-   * 
+   *
    * @param {Int} obj.currentLevel - If obj.resetCurrentLevel == true, then this stores the value
    * of the current level. Otherwise this stores the current level + 1.
    * @param {Boolean} obj.resetCurrentLevel - Indicates if the current level should be restarted.
@@ -118,7 +119,7 @@ export class GameArea {
    * This method will also be called when the player presses the buttons on the sides
    * of the game area.
    * In this method you should include all the logic for handling player input.
-   * 
+   *
    * @param {Int} input - The keycode of the pressed key. 
    */
   handleKeyPressed(input) { }
@@ -136,9 +137,9 @@ export class GameArea {
    * Can optionally be implemented.
    * This method will be called every time the player clicks or touches the screen.
    * In this method you should include all the logic for handling clicks.
-   * 
+   *
    * @param {Float} obj.mouseX - The x coord of the click.
-   * @param {Float} obj.mouseY - The y coord of the click. 
+   * @param {Float} obj.mouseY - The y coord of the click.
    */
   handleTouchStarted({ mouseX, mouseY }) { }
 
@@ -153,7 +154,7 @@ export class GameArea {
    * Handles the screen resize.
    * This method is called by GameScreen and it should't be used
    * by the developer.
-   * 
+   *
    * @param {Float} obj.x - The new x coord of the game area.
    * @param {Float} obj.y - The new y coord of the game area.
    * @param {Float} obj.width - The new width of the game area.
@@ -194,9 +195,9 @@ export class GameArea {
    * - If the game is finished -> Game cleared.
    * - If the next level is loading and isn't resetting -> Stage (n) cleared!.
    * - If the next level is loading and is resetting -> Lives left: (m).
-   * 
+   *
    * This method calls onGameOver() if the lives are less than 1 and calls onLoad() after onGameOver().
-   * 
+   *
    * @param {Boolean} resetCurrentLevel - If you want to reset the current level.
    * @param {Boolean} isGameFinished - A flag indicating if the game is finished.
    * @param {Float} loadTimeOut - The time in miliseconds the method waits before calling onGameOver() and onLoad().
@@ -291,7 +292,7 @@ export class GameArea {
 
   /**
    * Displays text on the center of the game area.
-   * 
+   *
    * @param {String} obj.message - The text to be displayed.
    * @param {String} obj.wrapStyle - The wrap style (p5.WORD, p5.CHAR).
    * @param {Float} obj.boxWidth - The width of the text wrapper.

@@ -107,7 +107,8 @@ export class BrickBreakerScreen extends GameArea {
     Implementacion
   */
   isLevelCleared() {
-    return this.blocks.filter(b => b.isActive()).length === 0;
+    const destructibleBlocks = this.blocks.filter(b => b.durability > 0);
+    return destructibleBlocks.filter(b => b.isActive()).length === 0;
   }
 
   handleEndGame() {

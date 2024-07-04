@@ -37,6 +37,7 @@ export const CONSTANTS = {
 };
 
 // Durabilidad negativa significa indestructible
+// 2 - @nd!&R7B+L
 export const BLOCK_TYPES = {
   '*': {
     durability: 0,
